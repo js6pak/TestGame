@@ -18,13 +18,6 @@ namespace UnityBuilderAction
       // Gather values from args
       var options = ArgumentsParser.GetValidatedOptions();
 
-      string rawScriptingBackend;
-      if (options.TryGetValue("scriptingBackend", out rawScriptingBackend))
-      {
-        var scriptingBackend = (ScriptingImplementation)Enum.Parse(typeof(ScriptingImplementation), rawScriptingBackend);
-        PlayerSettings.SetScriptingBackend(BuildTargetGroup.Standalone, scriptingBackend);
-      }
-
       // Gather values from project
       var scenes = EditorBuildSettings.scenes.Where(scene => scene.enabled).Select(s => s.path).ToArray();
       
@@ -44,6 +37,13 @@ namespace UnityBuilderAction
         target = (BuildTarget) Enum.Parse(typeof(BuildTarget), options["buildTarget"]),
         options = buildOptions
       };
+
+      string rawScriptingBackend;
+      if (options.TryGetValue("scriptingBackend", out rawScriptingBackend))
+      {
+        var scriptingBackend = (ScriptingImplementation)Enum.Parse(typeof(ScriptingImplementation), rawScriptingBackend);
+        PlayerSettings.SetScriptingBackend(BuildPipeline.GetBuildTargetGroup(buildPlayerOptions.target), scriptingBackend);
+      }
 
       // Set version for this build
       VersionApplicator.SetVersion(options["buildVersion"]);
