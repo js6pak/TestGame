@@ -69,6 +69,7 @@ jobs:
           allowDirtyBuild: true
           buildName: TestGame
           buildMethod: UnityBuilderAction.Builder.BuildProject
+          androidSymbolType: debugging
           customParameters: -scriptingBackend ${{ steps.set-vars.outputs.scripting-backend }}
 
       - uses: actions/upload-artifact@v3
