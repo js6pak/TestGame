@@ -77,15 +77,6 @@ jobs:
           name: TestGame-${{ matrix.unity-version }}-${{ matrix.target-platform }}-${{ matrix.scripting-backend }}
           path: ./build/${{ matrix.target-platform }}
 
-      - shell: bash
-        run: |
-          7z a -tzip "${{ matrix.unity-version }}-${{ matrix.target-platform }}-${{ matrix.scripting-backend }}.zip" ./build/${{ matrix.target-platform }}/*
-
-      - uses: actions/upload-artifact@v3
-        with:
-          name: TestGame
-          path: "${{ matrix.unity-version }}-${{ matrix.target-platform }}-${{ matrix.scripting-backend }}.zip"
-
   create_release:
     if: github.event_name != 'pull_request'
     permissions:
