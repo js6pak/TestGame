@@ -1,0 +1,4 @@
+--platform ubuntu-24.04=js6pak/ubuntu:full-24.04
+--artifact-server-path $PWD/.artifacts
+--action-offline-mode
+--secret-file .secrets

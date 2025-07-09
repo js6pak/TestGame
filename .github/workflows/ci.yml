@@ -1,0 +1,41 @@
+name: CI
+
+permissions:
+  contents: read
+
+on: [ push, pull_request, workflow_dispatch ]
+
+jobs:
+  setup:
+    name: Setup
+    runs-on: ubuntu-24.04
+    outputs:
+      matrices: ${{ steps.compute-matrix.outputs.matrices }}
+    env:
+      DOTNET_TELEMETRY_OPTOUT: true
+      DOTNET_NOLOGO: true
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: .github/workflows
+
+      - uses: nike4613/install-dotnet@6625f6cf2b076b088eee77a005f5f226e89aa580
+        with:
+          global-json: ./.github/workflows/gen-matrix/global.json
+        env:
+          DOTNET_INSTALL_DIR: ${{ runner.tool_cache }}/dotnet
+
+      - name: Compute matrix
+        id: compute-matrix
+        run: dotnet run --project ./.github/workflows/gen-matrix/gen-matrix.csproj -c Release
+
+  build:
+    needs: [ setup ]
+    strategy:
+      fail-fast: false
+      matrix: ${{ needs.setup.result == 'success' && fromJSON(needs.setup.outputs.matrices) || '' }}
+    name: ${{ matrix.title }}
+    uses: ./.github/workflows/build.yml
+    with:
+      matrix: ${{ toJSON(matrix.matrix) }}
+    secrets: inherit
