@@ -74,9 +74,15 @@ jobs:
       - name: Setup Android Sdk
         shell: bash
         run: |
+          "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager"* tools
+          ls "$ANDROID_HOME/tools"
+
           export JAVA_HOME="$JAVA_HOME_8_X64"
           export PATH="$JAVA_HOME/bin:$PATH"
-          "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager"* tools
+          java -version
+
+          echo "JAVA_HOME=$JAVA_HOME" >> $GITHUB_ENV
+          echo "PATH=$PATH" >> $GITHUB_ENV
 
       - name: Build
         uses: js6pak/unity-action@main
