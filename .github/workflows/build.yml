@@ -19,13 +19,29 @@ jobs:
   build:
     name: ${{ matrix.title }}
     strategy:
-      max-parallel: 10 # TODO User reaches maximum same user attempt retry count
+      # max-parallel: 10
       fail-fast: false
       matrix: ${{ fromJSON(inputs.matrix) }}
     runs-on: ${{ matrix.runner }}
 
     steps:
       - uses: actions/checkout@v4
+
+      - name: Setup Unity
+        uses: js6pak/unity-setup@main
+        with:
+          version-file: 'None'
+          unity-version: ${{ matrix.unity_version }}
+          modules: ${{ matrix.modules }}
+          install-path: '${{ runner.tool_cache }}/unity'
+
+      - name: Activate Unity
+        uses: js6pak/activate-unity-license@unity5
+        with:
+          license: 'Personal'
+          username: ${{ secrets.UNITY_EMAIL }}
+          password: ${{ secrets.UNITY_PASSWORD }}
+          license-version: ${{ startsWith(matrix.unity_version, '5.') && '5.x' || '' }}
 
       - name: Install Linux dependencies
         if: startsWith(matrix.runner, 'ubuntu-')
@@ -55,29 +71,15 @@ jobs:
           "$(dirname "$0")/.$(basename "$0")" "${args[@]}"
           EOF
               chmod +x "$UNITY_EDITOR_DATA_PATH"/bee_backend
+              echo "Wrapped bee_backend"
           fi
-
-      - name: Setup Unity
-        uses: js6pak/unity-setup@main
-        with:
-          version-file: 'None'
-          unity-version: ${{ matrix.unity_version }}
-          modules: ${{ matrix.modules }}
-          install-path: '${{ runner.tool_cache }}/unity'
-
-      - name: Activate Unity
-        uses: js6pak/activate-unity-license@unity5
-        with:
-          license: 'Personal'
-          username: ${{ secrets.UNITY_EMAIL }}
-          password: ${{ secrets.UNITY_PASSWORD }}
-          license-version: ${{ startsWith(matrix.unity_version, '5.') && '5.x' || '' }}
 
       - name: Build
         uses: js6pak/unity-action@main
         with:
           project-path: ${{ github.workspace }}
           args: '-quit -executeMethod UnityPlayerBuildTools.StartCommandLineBuild -buildTarget ${{ matrix.build_target }} -scriptingBackend ${{ matrix.scripting_implementation }} ${{ matrix.extra_args }}'
+        timeout-minutes: 60
 
       - name: Upload builds
         uses: actions/upload-artifact@v4
