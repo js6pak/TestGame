@@ -124,21 +124,21 @@ namespace Buildalon.Editor.BuildPipeline
                 {
                     case BuildTarget.StandaloneWindows:
                     case BuildTarget.StandaloneWindows64:
-#if PLATFORM_STANDALONE_WIN
-                        return UnityEditor.WindowsStandalone.UserBuildSettings.createSolution ? string.Format("{0}{1}", Path.DirectorySeparatorChar, Application.productName) : ".exe";
-#else
+// #if PLATFORM_STANDALONE_WIN
+                        // return UnityEditor.WindowsStandalone.UserBuildSettings.createSolution ? string.Format("{0}{1}", Path.DirectorySeparatorChar, Application.productName) : ".exe";
+// #else
                         return ".exe";
-#endif
+// #endif
 #if UNITY_2017_3_OR_NEWER
                     case BuildTarget.StandaloneOSX:
 #else
                     case BuildTarget.StandaloneOSXUniversal:
 #endif
-#if PLATFORM_STANDALONE_OSX
-                        return UnityEditor.OSXStandalone.UserBuildSettings.createXcodeProject ? string.Format("{0}{1}", Path.DirectorySeparatorChar, Application.productName) : ".app";
-#else
+// #if PLATFORM_STANDALONE_OSX
+                        // return UnityEditor.OSXStandalone.UserBuildSettings.createXcodeProject ? string.Format("{0}{1}", Path.DirectorySeparatorChar, Application.productName) : ".app";
+// #else
                         return ".app";
-#endif
+// #endif
 #if !UNITY_2019_2_OR_NEWER
                     case BuildTarget.StandaloneLinux:
 #endif
