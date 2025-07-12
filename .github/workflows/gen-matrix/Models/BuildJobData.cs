@@ -8,6 +8,9 @@ internal sealed record BuildJobData
     public required string Name { get; init; }
     public required string Runner { get; init; }
 
+    public required bool NeedsAndroidSdk { get; init; }
+    public required string NeedsAndroidNdk { get; init; }
+
     public required UnityVersion UnityVersion { get; init; }
     public required string Modules { get; init; }
     public required BuildTarget BuildTarget { get; init; }

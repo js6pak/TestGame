@@ -215,10 +215,21 @@ foreach (var unityVersion in unityVersions)
                              _ => throw new ArgumentOutOfRangeException(),
                          };
 
+                var needsAndroidSdk = platform == Platform.Android && unityVersion.Major < 2019;
+                var needsAndroidNdk = needsAndroidSdk && scriptingImplementation == ScriptingImplementation.IL2CPP
+                    ? unityVersion.GreaterThanOrEquals(2018, 3)
+                        ? "r16b"
+                        : unityVersion.GreaterThanOrEquals(2017)
+                            ? "r13b"
+                            : "r10e"
+                    : "";
+
                 jobs.Add(new BuildJobData
                 {
                     Name = id,
                     Runner = runner.GetImageLabel(),
+                    NeedsAndroidSdk = needsAndroidSdk,
+                    NeedsAndroidNdk = needsAndroidNdk,
                     UnityVersion = unityVersion,
                     Modules = string.Join(' ', modules),
                     BuildTarget = buildTarget,
