@@ -1,4 +1,5 @@
-﻿using System.Text.Json;
+﻿using System.Diagnostics;
+using System.Text.Json;
 using AssetRipper.Primitives;
 using GenMatrix;
 using GenMatrix.Models;
@@ -51,9 +52,9 @@ foreach (var unityVersion in unityVersions)
 
     var platforms = new[]
     {
-        Platform.Windows,
-        Platform.MacOS,
-        Platform.Linux,
+        // Platform.Windows,
+        // Platform.MacOS,
+        // Platform.Linux,
         Platform.Android,
     };
 
@@ -90,8 +91,14 @@ foreach (var unityVersion in unityVersions)
 
         foreach (var architecture in architectures)
         {
-            var supportsIl2Cpp = platform == Platform.Android ||
-                                 unityVersion >= new UnityVersion(2018, 1, 0, UnityVersionType.Beta, 2);
+            var supportsIl2Cpp = platform switch
+            {
+                Platform.Android => true,
+                Platform.Windows or Platform.MacOS => unityVersion >= new UnityVersion(2018, 1, 0, UnityVersionType.Beta, 2),
+                Platform.Linux => unityVersion >= new UnityVersion(2019, 3, 0, UnityVersionType.Beta, 4),
+                _ => throw new ArgumentOutOfRangeException()
+            };
+
             ReadOnlySpan<ScriptingImplementation> scriptingImplementations = supportsIl2Cpp
                 ? [ScriptingImplementation.Mono2x, ScriptingImplementation.IL2CPP]
                 : [ScriptingImplementation.Mono2x];
@@ -103,7 +110,7 @@ foreach (var unityVersion in unityVersions)
                     ScriptingImplementation.Mono2x => hasLinuxEditor ? RunnerOperatingSystem.Linux : RunnerOperatingSystem.Windows,
                     ScriptingImplementation.IL2CPP => platform switch
                     {
-                        Platform.Linux => hasLinuxEditor && unityVersion.Major >= 2019 ? RunnerOperatingSystem.Linux : RunnerOperatingSystem.Windows,
+                        Platform.Linux => hasLinuxEditor ? RunnerOperatingSystem.Linux : throw new UnreachableException(),
                         Platform.Android => hasLinuxEditor ? RunnerOperatingSystem.Linux : RunnerOperatingSystem.Windows,
                         Platform.Windows => RunnerOperatingSystem.Windows,
                         Platform.MacOS => RunnerOperatingSystem.MacOS,
@@ -225,18 +232,37 @@ foreach (var unityVersion in unityVersions)
 
 Console.WriteLine($"{jobs.Count} jobs");
 
+var macJobs = jobs.Where(x => x.Runner.StartsWith("macos-")).ToList();
+jobs.RemoveAll(x => macJobs.Contains(x));
+
 var chunks = jobs.Chunk(Constants.MaxJobCountPerMatrix).ToArray();
+
+var wrappers = chunks.Index().Select(x => new MatrixWrapper
+{
+    Title = chunks.Length == 1 ? "Build" : $"Build {x.Index + 1}/{chunks.Length}",
+    Matrix = new Matrix<Job>
+    {
+        Include = x.Item,
+    },
+}).ToList();
+
+if (macJobs.Count != 0)
+{
+    if (macJobs.Count > Constants.MaxJobCountPerMatrix) throw new NotImplementedException();
+    wrappers.Add(new MatrixWrapper
+    {
+        Title = "Build (MacOS)",
+        Matrix = new Matrix<Job>
+        {
+            Include = macJobs,
+        },
+        MaxParallel = 1,
+    });
+}
 
 var matrices = new Matrix<MatrixWrapper>
 {
-    Include = chunks.Index().Select(x => new MatrixWrapper
-    {
-        Title = chunks.Length == 1 ? "Build" : $"Build {x.Index + 1}/{chunks.Length}",
-        Matrix = new Matrix<Job>
-        {
-            Include = x.Item,
-        },
-    }),
+    Include = wrappers,
 };
 
 if (GitHubActions.IsRunning)

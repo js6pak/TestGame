@@ -12,4 +12,7 @@ internal sealed record MatrixWrapper
 
     [JsonPropertyName("matrix")]
     public required Matrix<Job> Matrix { get; init; }
+
+    [JsonPropertyName("max-parallel")]
+    public int? MaxParallel { get; init; }
 }

@@ -9,6 +9,9 @@ on:
       matrix:
         required: true
         type: string
+      max-parallel:
+        required: false
+        type: string
     secrets:
       UNITY_EMAIL:
         required: true
@@ -19,9 +22,9 @@ jobs:
   build:
     name: ${{ matrix.title }}
     strategy:
-      # max-parallel: 10
-      fail-fast: false
       matrix: ${{ fromJSON(inputs.matrix) }}
+      fail-fast: false
+      max-parallel: ${{ inputs.max-parallel }}
     runs-on: ${{ matrix.runner }}
 
     steps:
@@ -73,6 +76,13 @@ jobs:
               chmod +x "$UNITY_EDITOR_DATA_PATH"/bee_backend
               echo "Wrapped bee_backend"
           fi
+
+      - name: Setup Android Sdk
+        shell: bash
+        run: |
+          export JAVA_HOME="$JAVA_HOME_8_X64"
+          export PATH="$JAVA_HOME/bin:$PATH"
+          "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager"* tools
 
       - name: Build
         uses: js6pak/unity-action@main

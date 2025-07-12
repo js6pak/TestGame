@@ -24,7 +24,7 @@ namespace Buildalon.Editor.BuildPipeline
                 return;
             }
 #if PLATFORM_IOS
-            var projectPath = $"{report.summary.outputPath}/Unity-iPhone.xcodeproj/project.pbxproj";
+            var projectPath = string.Format("{0}/Unity-iPhone.xcodeproj/project.pbxproj", report.summary.outputPath);
             var pbxProject = new UnityEditor.iOS.Xcode.PBXProject();
             pbxProject.ReadFromFile(projectPath);
 #if UNITY_2019_3_OR_NEWER

@@ -77,7 +77,7 @@ namespace Buildalon.Editor.BuildPipeline.Logging
                 {
                     var buildResultMessage = string.Format("Unity {0} ", buildReport.summary.platform) +
 #if UNITY_6000_0_OR_NEWER
-                                             $"{buildReport.summary.buildType} " +
+                                             string.Format("{0} ", buildReport.summary.buildType) +
 #endif
                                              string.Format("Build {0}!", buildReport.summary.result);
                     summaryWriter.WriteLine("# {0}", buildResultMessage);

@@ -125,7 +125,7 @@ namespace Buildalon.Editor.BuildPipeline
                     case BuildTarget.StandaloneWindows:
                     case BuildTarget.StandaloneWindows64:
 #if PLATFORM_STANDALONE_WIN
-                        return UnityEditor.WindowsStandalone.UserBuildSettings.createSolution ? $"{Path.DirectorySeparatorChar}{Application.productName}" : ".exe";
+                        return UnityEditor.WindowsStandalone.UserBuildSettings.createSolution ? string.Format("{0}{1}", Path.DirectorySeparatorChar, Application.productName) : ".exe";
 #else
                         return ".exe";
 #endif
@@ -135,7 +135,7 @@ namespace Buildalon.Editor.BuildPipeline
                     case BuildTarget.StandaloneOSXUniversal:
 #endif
 #if PLATFORM_STANDALONE_OSX
-                        return UnityEditor.OSXStandalone.UserBuildSettings.createXcodeProject ? $"{Path.DirectorySeparatorChar}{Application.productName}" : ".app";
+                        return UnityEditor.OSXStandalone.UserBuildSettings.createXcodeProject ? string.Format("{0}{1}", Path.DirectorySeparatorChar, Application.productName) : ".app";
 #else
                         return ".app";
 #endif
@@ -321,7 +321,7 @@ namespace Buildalon.Editor.BuildPipeline
                         }
                         else
                         {
-                            Debug.LogError($"Failed to parse -il2cppCompilerConfiguration: \"{il2CppCompilerConfigurationString}\"");
+                            Debug.LogError(string.Format("Failed to parse -il2cppCompilerConfiguration: \"{0}\"", il2CppCompilerConfigurationString));
                         }
 
                         break;
@@ -336,7 +336,7 @@ namespace Buildalon.Editor.BuildPipeline
                         }
                         else
                         {
-                            Debug.LogError($"Failed to parse -il2cppCodeGeneration: \"{il2CppCodeGenerationString}\"");
+                            Debug.LogError(string.Format("Failed to parse -il2cppCodeGeneration: \"{0}\"", il2CppCodeGenerationString));
                         }
 
                         break;
@@ -443,7 +443,7 @@ namespace Buildalon.Editor.BuildPipeline
                                     PlayerSettings.iOS.tvOSManualProvisioningProfileType = ProvisioningProfileType.Distribution;
                                     break;
                                 default:
-                                    Debug.LogError($"Unsupported -appleProvisioningProfileType: \"{profileType}\"");
+                                    Debug.LogError(string.Format("Unsupported -appleProvisioningProfileType: \"{0}\"", profileType));
                                     break;
                             }
                         }
@@ -461,7 +461,7 @@ namespace Buildalon.Editor.BuildPipeline
                                     PlayerSettings.iOS.iOSManualProvisioningProfileType = ProvisioningProfileType.Distribution;
                                     break;
                                 default:
-                                    Debug.LogError($"Unsupported -appleProvisioningProfileType: \"{profileType}\"");
+                                    Debug.LogError(string.Format("Unsupported -appleProvisioningProfileType: \"{0}\"", profileType));
                                     break;
                             }
                         }
@@ -501,7 +501,7 @@ namespace Buildalon.Editor.BuildPipeline
                                 "arm64" => UnityEditor.OSXStandalone.MacOSArchitecture.ARM64,
                                 "x64arm64" => UnityEditor.OSXStandalone.MacOSArchitecture.x64ARM64,
 #endif // UNITY_2020_1_OR_NEWER
-                            _ => throw new Exception($"Unsupported architecture: {arch}"),
+                            _ => throw new Exception(string.Format("Unsupported architecture: {0}", arch)),
                         };
 #elif UNITY_2017_1_OR_NEWER
                         switch (arch)

@@ -380,7 +380,7 @@ internal class UnityPlayerBuildTools
                 }
                 else
                 {
-                    Debug.LogError($"Failed to parse versionCode \"{buildInfo.BuildNumber}\"");
+                    Debug.LogError(string.Format("Failed to parse versionCode \"{0}\"", buildInfo.BuildNumber));
                 }
             }
             else if (buildInfo.AutoIncrement)

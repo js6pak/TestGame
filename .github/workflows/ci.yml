@@ -3,7 +3,11 @@ name: CI
 permissions:
   contents: read
 
-on: [ push, pull_request, workflow_dispatch ]
+on:
+  push:
+    tags-ignore:
+      - '**'
+  workflow_dispatch:
 
 jobs:
   setup:
@@ -32,10 +36,11 @@ jobs:
   build:
     needs: [ setup ]
     strategy:
-      fail-fast: false
       matrix: ${{ needs.setup.result == 'success' && fromJSON(needs.setup.outputs.matrices) || '' }}
+      fail-fast: false
     name: ${{ matrix.title }}
     uses: ./.github/workflows/build.yml
     with:
       matrix: ${{ toJSON(matrix.matrix) }}
+      max-parallel: ${{ matrix.max-parallel || '' }}
     secrets: inherit
