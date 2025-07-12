@@ -24,6 +24,27 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Setup Android Sdk
+        shell: bash
+        run: |
+          "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager"* tools
+          echo "JAVA_HOME=$JAVA_HOME_8_X64" >>"$GITHUB_ENV"
+          echo "$JAVA_HOME_8_X64/bin" >>"$GITHUB_PATH"
+
+          if [[ "$OSTYPE" == "linux"* ]]; then
+              PLATFORM="linux-x86_64"
+          elif [[ "$OSTYPE" == "darwin"* ]]; then
+              PLATFORM="darwin-x86_64"
+          elif [[ "$OSTYPE" == "msys" || "$OSTYPE" == "cygwin" || "$OSTYPE" == "win32" ]]; then
+              PLATFORM="windows-x86_64"
+          else
+              echo "Unsupported operating system: $OSTYPE"
+              exit 1
+          fi
+          curl -LO "https://dl.google.com/android/repository/android-ndk-r13b-$PLATFORM.zip"
+          unzip android-ndk-r13b-*.zip
+          echo "ANDROID_NDK_HOME=$PWD/android-ndk-r13b" >>"$GITHUB_ENV"
+
       - name: Setup Unity
         uses: js6pak/unity-setup@main
         with:
@@ -71,19 +92,6 @@ jobs:
               echo "Wrapped bee_backend"
           fi
 
-      - name: Setup Android Sdk
-        shell: bash
-        run: |
-          "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager"* tools
-          ls "$ANDROID_HOME/tools"
-
-          export JAVA_HOME="$JAVA_HOME_8_X64"
-          export PATH="$JAVA_HOME/bin:$PATH"
-          java -version
-
-          echo "JAVA_HOME=$JAVA_HOME" >> $GITHUB_ENV
-          echo "PATH=$PATH" >> $GITHUB_ENV
-
       - name: Build
         uses: js6pak/unity-action@main
         with:
@@ -95,7 +103,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           retention-days: 1
-          name: TestGame ${{ matrix.title }}
+          name: TestGame ${{ matrix.name }}
           path: ./Builds/*/*
 
       - name: Upload logs
@@ -103,7 +111,7 @@ jobs:
         if: failure()
         with:
           retention-days: 1
-          name: Logs ${{ matrix.title }}
+          name: Logs ${{ matrix.name }}
           path: |
             ${{ github.workspace }}/**/*.log
 

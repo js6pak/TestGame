@@ -118,6 +118,7 @@ internal class UnityPlayerBuildTools
                 );
 
                 Debug.Log(string.Format("AndroidSdkRoot: {0}", androidSdkPath));
+                Debug.Log(string.Format("AndroidNdkRoot: {0}", EditorPrefs.GetString("AndroidNdkRoot")));
             }
 
             finalBuildReport = BuildUnityPlayer();
