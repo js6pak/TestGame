@@ -8,6 +8,6 @@ namespace GenMatrix;
     GenerationMode = JsonSourceGenerationMode.Default,
     UseStringEnumConverter = true
 )]
-[JsonSerializable(typeof(Job))]
-[JsonSerializable(typeof(Matrix<MatrixWrapper>))]
+[JsonSerializable(typeof(BuildJobData))]
+[JsonSerializable(typeof(Matrix<Job>))]
 internal sealed partial class JsonCtx : JsonSerializerContext;

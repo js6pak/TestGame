@@ -6,11 +6,8 @@ permissions:
 on:
   workflow_call:
     inputs:
-      matrix:
+      strategy:
         required: true
-        type: string
-      max-parallel:
-        required: false
         type: string
     secrets:
       UNITY_EMAIL:
@@ -20,11 +17,8 @@ on:
 
 jobs:
   build:
-    name: ${{ matrix.title }}
-    strategy:
-      matrix: ${{ fromJSON(inputs.matrix) }}
-      fail-fast: false
-      max-parallel: ${{ inputs.max-parallel }}
+    name: ${{ matrix.name }}
+    strategy: ${{ fromJSON(inputs.strategy) }}
     runs-on: ${{ matrix.runner }}
 
     steps:

@@ -5,7 +5,7 @@ using GenMatrix;
 using GenMatrix.Models;
 using GenMatrix.Models.Unity;
 
-var jobs = new List<Job>();
+var jobs = new List<BuildJobData>();
 
 var unityVersions = ((string[])
 [
@@ -215,9 +215,9 @@ foreach (var unityVersion in unityVersions)
                              _ => throw new ArgumentOutOfRangeException(),
                          };
 
-                jobs.Add(new Job
+                jobs.Add(new BuildJobData
                 {
-                    Title = id,
+                    Name = id,
                     Runner = runner.GetImageLabel(),
                     UnityVersion = unityVersion,
                     Modules = string.Join(' ', modules),
@@ -237,40 +237,49 @@ jobs.RemoveAll(x => macJobs.Contains(x));
 
 var chunks = jobs.Chunk(Constants.MaxJobCountPerMatrix).ToArray();
 
-var wrappers = chunks.Index().Select(x => new MatrixWrapper
+var wrapperJobs = chunks.Index().Select(x => new Job
 {
-    Title = chunks.Length == 1 ? "Build" : $"Build {x.Index + 1}/{chunks.Length}",
-    Matrix = new Matrix<Job>
+    Name = chunks.Length == 1 ? "Build" : $"Build {x.Index + 1}/{chunks.Length}",
+    Strategy = new Strategy<BuildJobData>
     {
-        Include = x.Item,
+        Matrix = new Matrix<BuildJobData>
+        {
+            Include = x.Item,
+        },
+        FailFast = false,
+        MaxParallel = null,
     },
 }).ToList();
 
 if (macJobs.Count != 0)
 {
     if (macJobs.Count > Constants.MaxJobCountPerMatrix) throw new NotImplementedException();
-    wrappers.Add(new MatrixWrapper
+    wrapperJobs.Add(new Job
     {
-        Title = "Build (MacOS)",
-        Matrix = new Matrix<Job>
+        Name = "Build (MacOS)",
+        Strategy = new Strategy<BuildJobData>
         {
-            Include = macJobs,
+            Matrix = new Matrix<BuildJobData>
+            {
+                Include = macJobs,
+            },
+            FailFast = false,
+            MaxParallel = 1,
         },
-        MaxParallel = 1,
     });
 }
 
-var matrices = new Matrix<MatrixWrapper>
+var matrices = new Matrix<Job>
 {
-    Include = wrappers,
+    Include = wrapperJobs,
 };
 
 if (GitHubActions.IsRunning)
 {
-    GitHubActions.SetOutput(Constants.MatricesVariableName, JsonSerializer.Serialize(matrices, JsonCtx.Default.MatrixMatrixWrapper));
+    GitHubActions.SetOutput(Constants.JobsVariableName, JsonSerializer.Serialize(matrices, JsonCtx.Default.MatrixJob));
 }
 else
 {
     var jsonCtx = new JsonCtx(new JsonSerializerOptions(JsonCtx.Default.Options) { WriteIndented = true });
-    Console.WriteLine(JsonSerializer.Serialize(matrices, jsonCtx.MatrixMatrixWrapper));
+    Console.WriteLine(JsonSerializer.Serialize(matrices, jsonCtx.MatrixJob));
 }

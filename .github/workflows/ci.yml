@@ -16,7 +16,7 @@ jobs:
     name: Setup
     runs-on: ubuntu-24.04
     outputs:
-      matrices: ${{ steps.compute-matrix.outputs.matrices }}
+      jobs: ${{ steps.compute-matrix.outputs.jobs }}
     env:
       DOTNET_TELEMETRY_OPTOUT: true
       DOTNET_NOLOGO: true
@@ -38,11 +38,10 @@ jobs:
   build:
     needs: [ setup ]
     strategy:
-      matrix: ${{ needs.setup.result == 'success' && fromJSON(needs.setup.outputs.matrices) || '' }}
+      matrix: ${{ needs.setup.result == 'success' && fromJSON(needs.setup.outputs.jobs) || '' }}
       fail-fast: false
-    name: ${{ matrix.title }}
+    name: ${{ matrix.name }}
     uses: ./.github/workflows/build.yml
     with:
-      matrix: ${{ toJSON(matrix.matrix) }}
-      max-parallel: ${{ matrix.max-parallel || '' }}
+      strategy: ${{ toJSON(matrix.strategy) }}
     secrets: inherit
