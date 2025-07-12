@@ -21,14 +21,23 @@ jobs:
     strategy: ${{ fromJSON(inputs.strategy) }}
     runs-on: ${{ matrix.runner }}
 
+    env:
+      # Avoid pre-installed modern platforms which crash Unity <2019
+      ANDROID_SDK_ROOT: ${{ github.workspace }}/android
+
     steps:
       - uses: actions/checkout@v4
 
       - name: Setup Android Sdk
         if: matrix.needs_android_sdk
+        uses: android-actions/setup-android@v3
+        with:
+          packages: 'tools platforms;android-29 build-tools;29.0.3'
+
+      - name: Setup Java 8
+        if: matrix.needs_android_sdk
         shell: bash
         run: |
-          "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager"* tools
           echo "JAVA_HOME=$JAVA_HOME_8_X64" >>"$GITHUB_ENV"
           echo "$JAVA_HOME_8_X64/bin" >>"$GITHUB_PATH"
 
@@ -50,7 +59,9 @@ jobs:
           fi
           curl -LO "https://dl.google.com/android/repository/android-ndk-$NDK_VERSION-$PLATFORM.zip"
           unzip android-ndk-"$NDK_VERSION"-*.zip
-          echo "ANDROID_NDK_HOME=$PWD/android-ndk-$NDK_VERSION" >>"$GITHUB_ENV"
+          ANDROID_NDK_HOME="${{ github.workspace }}/android-ndk-$NDK_VERSION"
+          echo "ANDROID_NDK_HOME=$ANDROID_NDK_HOME" >>"$GITHUB_ENV"
+          echo "ANDROID_NDK_ROOT=$ANDROID_NDK_HOME" >>"$GITHUB_ENV"
 
       - name: Setup Unity
         uses: js6pak/unity-setup@main
@@ -73,7 +84,7 @@ jobs:
         run: |
           echo "deb https://archive.ubuntu.com/ubuntu jammy main universe" | sudo tee /etc/apt/sources.list.d/jammy.list
           sudo apt-get update
-          sudo apt-get install --no-install-recommends -y libgtk2.0-0 libglu1-mesa libgconf-2-4
+          sudo apt-get install --no-install-recommends -y libgtk2.0-0 libglu1-mesa libgconf-2-4 libncurses5
 
           curl -LO https://archive.ubuntu.com/ubuntu/pool/main/o/openssl/libssl1.1_1.1.0g-2ubuntu4_amd64.deb
           sudo dpkg -i libssl1.1_1.1.0g-2ubuntu4_amd64.deb
