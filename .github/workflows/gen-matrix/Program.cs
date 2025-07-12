@@ -52,10 +52,10 @@ foreach (var unityVersion in unityVersions)
 
     var platforms = new[]
     {
-        // Platform.Windows,
-        // Platform.MacOS,
-        // Platform.Linux,
-        Platform.Android,
+        Platform.Windows,
+        Platform.MacOS,
+        Platform.Linux,
+        // Platform.Android,
     };
 
     foreach (var platform in platforms)
