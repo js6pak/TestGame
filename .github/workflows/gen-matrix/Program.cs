@@ -55,7 +55,7 @@ foreach (var unityVersion in unityVersions)
         Platform.Windows,
         Platform.MacOS,
         Platform.Linux,
-        // Platform.Android,
+        Platform.Android,
     };
 
     foreach (var platform in platforms)

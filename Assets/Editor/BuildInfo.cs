@@ -273,11 +273,12 @@ namespace Buildalon.Editor.BuildPipeline
 
                         break;
                     case "-export":
-#if PLATFORM_STANDALONE_WIN
-                        UnityEditor.WindowsStandalone.UserBuildSettings.createSolution = true;
-#elif PLATFORM_STANDALONE_OSX
-                        UnityEditor.OSXStandalone.UserBuildSettings.createXcodeProject = true;
-#endif
+// TODO this was added somewhere in between 2018.4 and 2019.4, figure out when and ifdef
+// #if PLATFORM_STANDALONE_WIN
+//                         UnityEditor.WindowsStandalone.UserBuildSettings.createSolution = true;
+// #elif PLATFORM_STANDALONE_OSX
+//                         UnityEditor.OSXStandalone.UserBuildSettings.createXcodeProject = true;
+// #endif
                         break;
                     case "-symlinkSources":
 #if UNITY_2021_1_OR_NEWER
