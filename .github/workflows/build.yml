@@ -30,7 +30,7 @@ jobs:
 
       - name: Setup Android Sdk
         if: matrix.needs_android_sdk
-        uses: android-actions/setup-android@v3
+        uses: android-actions/setup-android@9fc6c4e9069bf8d3d10b2204b1fb8f6ef7065407 # v3.2.2
         with:
           packages: 'tools platforms;android-29 build-tools;29.0.3'
 
@@ -68,47 +68,15 @@ jobs:
         with:
           version-file: 'None'
           unity-version: ${{ matrix.unity_version }}
-          modules: ${{ matrix.modules }}
+          modules: ${{ matrix.modules || 'None' }}
           install-path: '${{ runner.tool_cache }}/unity'
 
       - name: Activate Unity
-        uses: js6pak/activate-unity-license@unity5
+        uses: js6pak/activate-unity-license@main
         with:
           license: 'Personal'
           username: ${{ secrets.UNITY_EMAIL }}
           password: ${{ secrets.UNITY_PASSWORD }}
-          license-version: ${{ startsWith(matrix.unity_version, '5.') && '5.x' || '' }}
-
-      - name: Install Linux dependencies
-        if: startsWith(matrix.runner, 'ubuntu-')
-        run: |
-          echo "deb https://archive.ubuntu.com/ubuntu jammy main universe" | sudo tee /etc/apt/sources.list.d/jammy.list
-          sudo apt-get update
-          sudo apt-get install --no-install-recommends -y libgtk2.0-0 libglu1-mesa libgconf-2-4 libncurses5
-
-          curl -LO https://archive.ubuntu.com/ubuntu/pool/main/o/openssl/libssl1.1_1.1.0g-2ubuntu4_amd64.deb
-          sudo dpkg -i libssl1.1_1.1.0g-2ubuntu4_amd64.deb
-
-          # https://discussions.unity.com/t/linux-editor-stuck-on-loading-because-of-bee-backend-w-workaround/854480
-          UNITY_EDITOR_DATA_PATH="$(dirname "$UNITY_EDITOR_PATH")"/Data
-          if [[ -f "$UNITY_EDITOR_DATA_PATH"/bee_backend && ! -f "$UNITY_EDITOR_DATA_PATH"/.bee_backend ]]; then
-              mv "$UNITY_EDITOR_DATA_PATH"/{,.}bee_backend
-              cat >"$UNITY_EDITOR_DATA_PATH"/bee_backend <<'EOF'
-          #!/usr/bin/env bash
-          args=("$@")
-          for ((i = 0; i < "${#args[@]}"; ++i)); do
-              case ${args[i]} in
-              --stdin-canary)
-                  unset args[i]
-                  break
-                  ;;
-              esac
-          done
-          "$(dirname "$0")/.$(basename "$0")" "${args[@]}"
-          EOF
-              chmod +x "$UNITY_EDITOR_DATA_PATH"/bee_backend
-              echo "Wrapped bee_backend"
-          fi
 
       - name: Build
         uses: js6pak/unity-action@main

@@ -57,7 +57,8 @@ namespace Buildalon.Editor.BuildPipeline.Logging
             @"Selected Visual Studio is missing required components and may not be able to build the generated project. You can install the missing Visual Studio components by opening the generated project in Visual Studio.",
             @"GfxDevice renderer is null. Unity cannot update the Ambient Probe and Reflection Probes that the SkyManager generates. Run the Editor without the -nographics argument or generate lighting for your scene.",
             @"Light baking could not be started because no valid OpenCL device could be found.",
-            @"OpenCL Error: 'clGetPlatformIDs(kMaxPlatforms, platforms, &numPlatforms)' returned -1001 (CL_PLATFORM_NOT_FOUND_KHR)."
+            @"OpenCL Error: 'clGetPlatformIDs(kMaxPlatforms, platforms, &numPlatforms)' returned -1001 (CL_PLATFORM_NOT_FOUND_KHR).",
+            "Mapping new ns ",
         };
 
         static CILoggingUtility()

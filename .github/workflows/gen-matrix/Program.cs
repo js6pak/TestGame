@@ -72,7 +72,19 @@ foreach (var unityVersion in unityVersions)
 
                 break;
             case Platform.MacOS:
-                architectures.Add(PlatformArchitecture.Universal);
+                if (unityVersion.GreaterThanOrEquals(2020, 2))
+                {
+                    architectures.Add(PlatformArchitecture.X64Arm64);
+                }
+                else if (unityVersion.GreaterThanOrEquals(2017, 3))
+                {
+                    architectures.Add(PlatformArchitecture.X64);
+                }
+                else
+                {
+                    architectures.Add(PlatformArchitecture.X64X86);
+                }
+
                 break;
             case Platform.Linux:
                 architectures.Add(PlatformArchitecture.X64);
@@ -164,7 +176,7 @@ foreach (var unityVersion in unityVersions)
                     (Platform.MacOS, _) when unityVersion.GreaterThanOrEquals(2017, 3) => BuildTarget.StandaloneOSX,
                     (Platform.MacOS, PlatformArchitecture.X86) => BuildTarget.StandaloneOSXIntel,
                     (Platform.MacOS, PlatformArchitecture.X64) => BuildTarget.StandaloneOSXIntel64,
-                    (Platform.MacOS, PlatformArchitecture.Universal) => BuildTarget.StandaloneOSXUniversal,
+                    (Platform.MacOS, PlatformArchitecture.X64X86) => BuildTarget.StandaloneOSXUniversal,
 
                     (Platform.Android, _) => BuildTarget.Android,
 
@@ -184,7 +196,8 @@ foreach (var unityVersion in unityVersions)
                         PlatformArchitecture.X86 => OSArchitecture.x86,
                         PlatformArchitecture.Arm => throw new NotSupportedException(),
                         PlatformArchitecture.Arm64 => OSArchitecture.ARM64,
-                        PlatformArchitecture.Universal => OSArchitecture.x64ARM64,
+                        PlatformArchitecture.X64Arm64 => OSArchitecture.x64ARM64,
+                        PlatformArchitecture.X64X86 => (OSArchitecture)2,
                         _ => throw new ArgumentOutOfRangeException(),
                     }).ToString());
                 }
@@ -205,6 +218,8 @@ foreach (var unityVersion in unityVersions)
                              PlatformArchitecture.X86 => "x86",
                              PlatformArchitecture.Arm => "arm",
                              PlatformArchitecture.Arm64 => "arm64",
+                             PlatformArchitecture.X64X86 => "x64x86",
+                             PlatformArchitecture.X64Arm64 => "x64arm64",
                              PlatformArchitecture.Universal => "universal",
                              _ => throw new ArgumentOutOfRangeException(),
                          }}-" +
