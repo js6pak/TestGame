@@ -41,3 +41,5 @@ jobs:
     with:
       strategy: ${{ toJSON(matrix.strategy) }}
     secrets: inherit
+    permissions:
+      contents: write
