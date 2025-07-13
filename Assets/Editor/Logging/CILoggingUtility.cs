@@ -59,6 +59,9 @@ namespace Buildalon.Editor.BuildPipeline.Logging
             @"Light baking could not be started because no valid OpenCL device could be found.",
             @"OpenCL Error: 'clGetPlatformIDs(kMaxPlatforms, platforms, &numPlatforms)' returned -1001 (CL_PLATFORM_NOT_FOUND_KHR).",
             "Mapping new ns ",
+            "unexpected element (uri:\"\", local:\"base-extension\"). Expected elements are <{}codename>,<{}layoutlib>,<{}api-level>",
+            "cvc-complex-type.2.4.a: Invalid content was found starting with element 'base-extension'. One of '{layoutlib}' is expected.",
+            ".android/repositories.cfg could not be loaded.",
         };
 
         static CILoggingUtility()
