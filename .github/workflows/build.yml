@@ -25,6 +25,9 @@ jobs:
       # Avoid pre-installed modern platforms which crash Unity <2019
       ANDROID_SDK_ROOT: ${{ github.workspace }}/android
 
+    permissions:
+      contents: write
+
     steps:
       - uses: actions/checkout@v4
 

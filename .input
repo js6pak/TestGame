@@ -1,0 +1,1 @@
+strategy={"matrix":{"include":[{"name":"2017.4.40f1-android-universal-il2cpp","runner":"ubuntu-24.04","needs_android_sdk":true,"needs_android_ndk":"r13b","unity_version":"2017.4.40f1","modules":"android","build_target":"Android","scripting_implementation":"IL2CPP","extra_args":"-targetArchitectures All"}]},"fail-fast":false,"max-parallel":1}
