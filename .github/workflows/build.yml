@@ -85,12 +85,25 @@ jobs:
           args: '-quit -executeMethod UnityPlayerBuildTools.StartCommandLineBuild -buildTarget ${{ matrix.build_target }} -scriptingBackend ${{ matrix.scripting_implementation }} ${{ matrix.extra_args }}'
         timeout-minutes: 60
 
-      - name: Upload builds
+      - name: Zip
+        shell: bash
+        run: |
+          cd "./Builds/${{ matrix.build_target }}"
+          zip "../../${{ matrix.name }}.zip" *)
+
+      - name: Upload
         uses: actions/upload-artifact@v4
         with:
           retention-days: 1
           name: TestGame ${{ matrix.name }}
-          path: ./Builds/*/*
+          path: ./Builds/${{ matrix.build_target }}/*
+
+      - name: Release
+        if: github.ref == 'refs/heads/gen-matrix' # TODO
+        uses: softprops/action-gh-release@72f2c25fcb47643c292f7107632f7a47c1df5cd8 # v2.3.2
+        with:
+          tag_name: v0
+          files: ${{ matrix.name }}.zip
 
       - name: Upload logs
         uses: actions/upload-artifact@v4
