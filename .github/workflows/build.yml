@@ -89,7 +89,7 @@ jobs:
         shell: bash
         run: |
           cd "./Builds/${{ matrix.build_target }}"
-          zip "../../${{ matrix.name }}.zip" *)
+          7z a -tzip "../../${{ matrix.name }}.zip" *
 
       - name: Upload
         uses: actions/upload-artifact@v4
