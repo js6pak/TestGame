@@ -79,7 +79,7 @@ jobs:
   build:
     needs: [ setup ]
     strategy:
-      matrix: ${{ needs.setup.result == 'success' && needs.setup.outputs.jobs && fromJSON(needs.setup.outputs.jobs) || '' }}
+      matrix: ${{ needs.setup.result == 'success' && needs.setup.outputs.jobs && fromJSON(needs.setup.outputs.jobs) || fromJSON('{"include":[{}]}') }}
       fail-fast: false
     name: ${{ matrix.name || 'Build' }}
     uses: ./.github/workflows/build.yml
