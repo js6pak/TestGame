@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 using AssetRipper.Primitives;
 using GenMatrix;
 using GenMatrix.Models;
@@ -45,6 +46,17 @@ static bool HasLinuxEditor(UnityVersion unityVersion)
     return false;
 }
 
+static Regex CreateRegexFromWildcard(string value)
+{
+    return new Regex("^" + Regex.Escape(value).Replace("\\*", ".*") + "$", RegexOptions.Compiled);
+}
+
+var targets = args.Length > 0
+    ? args[0]
+        .Split(" ")
+        .Select(CreateRegexFromWildcard)
+        .ToArray()
+    : null;
 
 foreach (var unityVersion in unityVersions)
 {
@@ -186,7 +198,7 @@ foreach (var unityVersion in unityVersions)
                 var extraArgs = new List<string>();
 
                 // Workaround https://discussions.unity.com/t/rendertexture-create-failed-during-nographics/724306/
-                if (runner != RunnerOperatingSystem.Windows || unityVersion.Major >= 2019)
+                if (unityVersion.Major >= 2018)
                 {
                     extraArgs.Add("-nographics");
                 }
@@ -245,6 +257,11 @@ foreach (var unityVersion in unityVersions)
                             ? "r13b"
                             : "r10e"
                     : "";
+
+                if (targets != null && !targets.Any(t => t.IsMatch(id)))
+                {
+                    continue;
+                }
 
                 jobs.Add(new BuildJobData
                 {

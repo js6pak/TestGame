@@ -6,10 +6,15 @@ permissions:
 on:
   push:
   workflow_dispatch:
+    inputs:
+      targets:
+        description: Targets to build
+        type: string
 
 jobs:
   setup:
     name: Setup
+    if: inputs.targets || contains(github.event.head_commit.message, '[rebuild]')
     runs-on: ubuntu-24.04
     outputs:
       jobs: ${{ steps.compute-matrix.outputs.jobs }}
@@ -29,7 +34,9 @@ jobs:
 
       - name: Compute matrix
         id: compute-matrix
-        run: dotnet run --project ./.github/workflows/gen-matrix/gen-matrix.csproj -c Release
+        env:
+          TARGETS: ${{ inputs.targets }}
+        run: dotnet run --project ./.github/workflows/gen-matrix/gen-matrix.csproj -c Release -- "$TARGETS"
 
   build:
     needs: [ setup ]
