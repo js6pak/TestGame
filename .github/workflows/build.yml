@@ -101,11 +101,29 @@ jobs:
           name: TestGame ${{ matrix.name }}
           path: ./Builds/${{ matrix.build_target }}/*
 
+      - name: Update tag
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { TAG_NAME } = process.env;
+
+            try {
+              console.log(await github.rest.git.updateRef({
+                ...context.repo,
+                ref: 'tags/' + TAG_NAME,
+                sha: context.sha,
+                force: true,
+              }));
+            } catch (e) {
+              if (e.status === 422 && e.response?.data?.message === 'Reference does not exist') return;
+              throw e;
+            }
+
       - name: Release
         if: github.ref == 'refs/heads/gen-matrix' # TODO
         uses: softprops/action-gh-release@72f2c25fcb47643c292f7107632f7a47c1df5cd8 # v2.3.2
         with:
-          tag_name: v0
+          tag_name: ${{ vars.TAG_NAME }}
           files: ${{ matrix.name }}.zip
 
       - name: Upload logs

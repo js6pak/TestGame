@@ -36,6 +36,7 @@ var unityVersions = ((string[])
     // "2017.2.5f1",
     // "2017.1.5f1",
     "5.6.7f1",
+    // "4.7.2f1",
 ]).Select(UnityVersion.Parse);
 
 static bool HasLinuxEditor(UnityVersion unityVersion)
@@ -46,17 +47,30 @@ static bool HasLinuxEditor(UnityVersion unityVersion)
     return false;
 }
 
-static Regex CreateRegexFromWildcard(string value)
+var includes = new List<Regex>();
+var excludes = new List<Regex>();
+
+foreach (var target in args.SelectMany(a => a.Split(" ")))
 {
-    return new Regex("^" + Regex.Escape(value).Replace("\\*", ".*") + "$", RegexOptions.Compiled);
+    if (target.StartsWith('!'))
+    {
+        var regex = Glob.ToRegex(target.AsSpan(1));
+        Console.WriteLine("Excluding: " + regex);
+        excludes.Add(regex);
+    }
+    else
+    {
+        var regex = Glob.ToRegex(target);
+        Console.WriteLine("Including: " + regex);
+        includes.Add(regex);
+    }
 }
 
-var targets = args.Length > 0
-    ? args[0]
-        .Split(" ")
-        .Select(CreateRegexFromWildcard)
-        .ToArray()
-    : null;
+if (includes.Count == 0)
+{
+    Console.WriteLine("No includes specified");
+    return 1;
+}
 
 foreach (var unityVersion in unityVersions)
 {
@@ -263,10 +277,19 @@ foreach (var unityVersion in unityVersions)
                             : "r10e"
                     : "";
 
-                if (targets != null && !targets.Any(t => t.IsMatch(id)))
+                if (!includes.Any(t => t.IsMatch(id)))
                 {
+                    Console.WriteLine($"Not including '{id}', because it didn't match any of the includes");
                     continue;
                 }
+
+                if (excludes.Where(t => t.IsMatch(id)).ToArray() is { Length: > 0 } excludedBy)
+                {
+                    Console.WriteLine($"Not including '{id}', because it was excluded by: {string.Join(", ", excludedBy.Select(r => r.ToString()))}");
+                    continue;
+                }
+
+                Console.WriteLine($"Including '{id}'");
 
                 jobs.Add(new BuildJobData
                 {
@@ -337,4 +360,19 @@ else
 {
     var jsonCtx = new JsonCtx(new JsonSerializerOptions(JsonCtx.Default.Options) { WriteIndented = true });
     Console.WriteLine(JsonSerializer.Serialize(matrices, jsonCtx.MatrixJob));
+
+    if (jobs is [var singleJob])
+    {
+        Console.WriteLine("strategy=" + JsonSerializer.Serialize(new Strategy<BuildJobData>
+        {
+            Matrix = new Matrix<BuildJobData>
+            {
+                Include = [singleJob],
+            },
+            FailFast = false,
+            MaxParallel = 1,
+        }, JsonCtx.Default.StrategyBuildJobData));
+    }
 }
+
+return 0;

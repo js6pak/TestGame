@@ -11,10 +11,12 @@ on:
         description: Targets to build
         type: string
 
+env:
+  TAG_NAME: v0
+
 jobs:
   setup:
     name: Setup
-    if: inputs.targets || contains(github.event.head_commit.message, '[rebuild]')
     runs-on: ubuntu-24.04
     outputs:
       jobs: ${{ steps.compute-matrix.outputs.jobs }}
@@ -32,10 +34,45 @@ jobs:
         env:
           DOTNET_INSTALL_DIR: ${{ runner.tool_cache }}/dotnet
 
+      - name: Compute targets
+        if: ${{ !inputs.targets }}
+        id: compute-targets
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { TAG_NAME } = process.env;
+            
+            const commitMessage = context.payload.head_commit?.message;
+            if (commitMessage) {
+              const match = /\[build: (.+)\]/.exec(commitMessage);
+              if (match) {
+                console.log('Using targets from the commit message');
+                return match;
+              }
+            }
+
+            let release;
+            try {
+              release = await github.rest.repos.getReleaseByTag({ ...context.repo, tag: TAG_NAME });
+            } catch (e) {
+              if (e.status === 404) {
+                console.log('Release not found');
+                return '';
+              }
+              throw e;
+            }
+
+            return release.data.assets
+              .map(a => a.name)
+              .filter(a => a.endsWith('.zip'))
+              .map(a => '!' + a.substring(0, a.length - '.zip'.length))
+              .join(' ');
+
       - name: Compute matrix
         id: compute-matrix
+        if: ${{ inputs.targets || steps.compute-targets.outputs.result }}
         env:
-          TARGETS: ${{ inputs.targets }}
+          TARGETS: ${{ inputs.targets || steps.compute-targets.outputs.result }}
         run: dotnet run --project ./.github/workflows/gen-matrix/gen-matrix.csproj -c Release -- "$TARGETS"
 
   build:
