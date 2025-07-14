@@ -85,7 +85,7 @@ jobs:
         uses: js6pak/unity-action@main
         with:
           project-path: ${{ github.workspace }}
-          args: '-quit -executeMethod UnityPlayerBuildTools.StartCommandLineBuild -buildTarget ${{ matrix.build_target }} -scriptingBackend ${{ matrix.scripting_implementation }} ${{ matrix.extra_args }}'
+          args: '-quit -createProject "${{ github.workspace }}" -executeMethod TestGame.SetupAndBuild -buildTarget ${{ matrix.build_target }} -scriptingBackend ${{ matrix.scripting_implementation }} ${{ matrix.extra_args }}'
         timeout-minutes: 60
 
       - name: Zip
