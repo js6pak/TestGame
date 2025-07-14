@@ -45,6 +45,10 @@ jobs:
             
             const commitMessage = context.payload.head_commit?.message;
             if (commitMessage) {
+              if (commitMessage.includes('[rebuild]')) {
+                return '*';
+              }
+
               const match = /\[build: (.+)\]/.exec(commitMessage);
               if (match) {
                 console.log('Using targets from the commit message');
@@ -78,8 +82,9 @@ jobs:
 
   build:
     needs: [ setup ]
+    if: needs.setup.result == 'success' && needs.setup.outputs.jobs
     strategy:
-      matrix: ${{ needs.setup.result == 'success' && needs.setup.outputs.jobs && fromJSON(needs.setup.outputs.jobs) || fromJSON('{"include":[{}]}') }}
+      matrix: ${{ needs.setup.result == 'success' && needs.setup.outputs.jobs && fromJSON(needs.setup.outputs.jobs) || '' }}
       fail-fast: false
     name: ${{ matrix.name || 'Build' }}
     uses: ./.github/workflows/build.yml
