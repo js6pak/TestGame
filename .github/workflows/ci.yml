@@ -74,7 +74,7 @@ jobs:
         if: ${{ inputs.targets || steps.compute-targets.outputs.result }}
         env:
           TARGETS: ${{ inputs.targets || steps.compute-targets.outputs.result }}
-        run: dotnet run --project ./.github/workflows/gen-matrix/gen-matrix.csproj -c Release -- $TARGETS
+        run: dotnet run --project ./.github/workflows/gen-matrix/gen-matrix.csproj -c Release -- "$TARGETS"
 
   build:
     needs: [ setup ]
