@@ -180,31 +180,31 @@ internal class UnityPlayerBuildTools
             BuildInfo.ParseCommandLineArgs();
         }
 
-        // use https://semver.org/
-        // major.minor.build
-        var version = new Version(
-            (buildInfo.Version == null || buildInfo.AutoIncrement)
-                ? StringEx.IsNullOrWhiteSpace(PlayerSettings.bundleVersion)
-                    ? GetValidVersionString(Application.version)
-                    : GetValidVersionString(PlayerSettings.bundleVersion)
-                : GetValidVersionString(buildInfo.Version.ToString()));
-
-        // Only auto incitement if the version wasn't specified in the build info.
-        if (buildInfo.Version == null &&
-            buildInfo.AutoIncrement)
-        {
-            version = new Version(version.Major, version.Minor, version.Build + 1);
-        }
-
-        // Updates the Application.version and syncs Android and iOS bundle version strings
-        PlayerSettings.bundleVersion = version.ToString();
-        // // Update Lumin bc the Application.version isn't synced like Android & iOS
-        // PlayerSettings.Lumin.versionName = PlayerSettings.bundleVersion;
-        // Update WSA bc the Application.version isn't synced like Android & iOS
-        PlayerSettings.WSA.packageVersion = new Version(version.Major, version.Minor, version.Build, 0);
-#if UNITY_6000_0_OR_NEWER
-            PlayerSettings.visionOSBundleVersion = PlayerSettings.bundleVersion;
-#endif // UNITY_6000_0_OR_NEWER
+//         // use https://semver.org/
+//         // major.minor.build
+//         var version = new Version(
+//             (buildInfo.Version == null || buildInfo.AutoIncrement)
+//                 ? StringEx.IsNullOrWhiteSpace(PlayerSettings.bundleVersion)
+//                     ? GetValidVersionString(Application.version)
+//                     : GetValidVersionString(PlayerSettings.bundleVersion)
+//                 : GetValidVersionString(buildInfo.Version.ToString()));
+//
+//         // Only auto incitement if the version wasn't specified in the build info.
+//         if (buildInfo.Version == null &&
+//             buildInfo.AutoIncrement)
+//         {
+//             version = new Version(version.Major, version.Minor, version.Build + 1);
+//         }
+//
+//         // Updates the Application.version and syncs Android and iOS bundle version strings
+//         PlayerSettings.bundleVersion = version.ToString();
+//         // // Update Lumin bc the Application.version isn't synced like Android & iOS
+//         // PlayerSettings.Lumin.versionName = PlayerSettings.bundleVersion;
+//         // Update WSA bc the Application.version isn't synced like Android & iOS
+//         PlayerSettings.WSA.packageVersion = new Version(version.Major, version.Minor, version.Build, 0);
+// #if UNITY_6000_0_OR_NEWER
+//             PlayerSettings.visionOSBundleVersion = PlayerSettings.bundleVersion;
+// #endif // UNITY_6000_0_OR_NEWER
 
         var buildTargetGroup = UnityEditor.BuildPipeline.GetBuildTargetGroup(buildInfo.BuildTarget);
 #if UNITY_2023_1_OR_NEWER

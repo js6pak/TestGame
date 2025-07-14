@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-public class RotatingCubeBehaviour : MonoBehaviour
+public sealed class RotatingCubeBehaviour : MonoBehaviour
 {
     private void Update()
     {
