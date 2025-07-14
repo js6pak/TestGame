@@ -52,7 +52,7 @@ jobs:
               const match = /\[build: (.+)\]/.exec(commitMessage);
               if (match) {
                 console.log('Using targets from the commit message');
-                return match;
+                return match[1];
               }
             }
 
