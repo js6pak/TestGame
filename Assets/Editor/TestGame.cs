@@ -26,7 +26,7 @@ internal static class TestGame
 
         var sha = Environment.GetEnvironmentVariable("GITHUB_SHA");
         PlayerSettings.bundleVersion = !StringEx.IsNullOrWhiteSpace(sha)
-            ? sha
+            ? sha.Substring(0, 12)
             : "local";
 
         CreateMainScene();

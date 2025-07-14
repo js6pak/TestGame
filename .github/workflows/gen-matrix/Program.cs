@@ -184,6 +184,13 @@ foreach (var unityVersion in unityVersions)
                 };
 
                 var extraArgs = new List<string>();
+
+                // Workaround https://discussions.unity.com/t/rendertexture-create-failed-during-nographics/724306/
+                if (platform != Platform.Windows)
+                {
+                    extraArgs.Add("-nographics");
+                }
+
                 if (platform == Platform.Android)
                 {
                     extraArgs.AddRange("-targetArchitectures", scriptingImplementation == ScriptingImplementation.Mono2x ? "ARMv7" : "All");
