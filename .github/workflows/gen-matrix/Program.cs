@@ -186,7 +186,7 @@ foreach (var unityVersion in unityVersions)
                 var extraArgs = new List<string>();
 
                 // Workaround https://discussions.unity.com/t/rendertexture-create-failed-during-nographics/724306/
-                if (platform != Platform.Windows)
+                if (runner != RunnerOperatingSystem.Windows || unityVersion.Major >= 2019)
                 {
                     extraArgs.Add("-nographics");
                 }
