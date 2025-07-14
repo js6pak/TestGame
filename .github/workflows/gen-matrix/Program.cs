@@ -62,6 +62,11 @@ foreach (var unityVersion in unityVersions)
 {
     var hasLinuxEditor = HasLinuxEditor(unityVersion);
 
+    if (unityVersion.Major <= 2017)
+    {
+        hasLinuxEditor = false;
+    }
+
     var platforms = new[]
     {
         Platform.Windows,

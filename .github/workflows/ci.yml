@@ -43,7 +43,7 @@ jobs:
     strategy:
       matrix: ${{ needs.setup.result == 'success' && fromJSON(needs.setup.outputs.jobs) || '' }}
       fail-fast: false
-    name: ${{ matrix.name }}
+    name: ${{ matrix.name || 'Build' }}
     uses: ./.github/workflows/build.yml
     with:
       strategy: ${{ toJSON(matrix.strategy) }}
