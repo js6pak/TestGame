@@ -42,17 +42,25 @@ jobs:
           result-encoding: 'string'
           script: |
             const { TAG_NAME } = process.env;
+
+            const commits = context.payload.commits;
+            if (commits) {
+              const matches = [];
+
+              for (const commit of commits) {
+                const message = commit.message;
+                if (message.includes('[rebuild]')) {
+                  return '*';
+                }
             
-            const commitMessage = context.payload.head_commit?.message;
-            if (commitMessage) {
-              if (commitMessage.includes('[rebuild]')) {
-                return '*';
+                const match = /\[build: (.+)\]/.exec(message);
+                if (match) {
+                  matches.push(match[1]);
+                }
               }
 
-              const match = /\[build: (.+)\]/.exec(commitMessage);
-              if (match) {
-                console.log('Using targets from the commit message');
-                return match[1];
+              if (matches.length !== 0) {
+                return matches.join(' ');
               }
             }
 
@@ -89,6 +97,7 @@ jobs:
     name: ${{ matrix.name || 'Build' }}
     uses: ./.github/workflows/build.yml
     with:
+      tag-name: ${{ vars.TAG_NAME }}
       strategy: ${{ toJSON(matrix.strategy) }}
     secrets: inherit
     permissions:
