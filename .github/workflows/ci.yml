@@ -39,6 +39,7 @@ jobs:
         id: compute-targets
         uses: actions/github-script@v7
         with:
+          result-encoding: 'string'
           script: |
             const { TAG_NAME } = process.env;
             
@@ -62,12 +63,11 @@ jobs:
               throw e;
             }
 
-            return release.data.assets
+            return '* ' + release.data.assets
               .map(a => a.name)
               .filter(a => a.endsWith('.zip'))
               .map(a => '!' + a.substring(0, a.length - '.zip'.length))
-              .join(' ')
-              .concat(['*']);
+              .join(' ');
 
       - name: Compute matrix
         id: compute-matrix
@@ -79,7 +79,7 @@ jobs:
   build:
     needs: [ setup ]
     strategy:
-      matrix: ${{ needs.setup.result == 'success' && fromJSON(needs.setup.outputs.jobs) || null }}
+      matrix: ${{ needs.setup.result == 'success' && fromJSON(needs.setup.outputs.jobs) || '' }}
       fail-fast: false
     name: ${{ matrix.name || 'Build' }}
     uses: ./.github/workflows/build.yml

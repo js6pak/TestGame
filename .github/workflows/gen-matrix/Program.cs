@@ -50,7 +50,7 @@ static bool HasLinuxEditor(UnityVersion unityVersion)
 var includes = new List<Regex>();
 var excludes = new List<Regex>();
 
-foreach (var target in args.SelectMany(a => a.Split(" ")))
+foreach (var target in args.SelectMany(a => a.Split(" ", StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)))
 {
     if (target.StartsWith('!'))
     {
@@ -354,7 +354,7 @@ var matrices = new Matrix<Job>
 
 if (GitHubActions.IsRunning)
 {
-    GitHubActions.SetOutput(Constants.JobsVariableName, JsonSerializer.Serialize(matrices, JsonCtx.Default.MatrixJob));
+    GitHubActions.SetOutput(Constants.JobsVariableName, jobs.Count == 0 ? "" : JsonSerializer.Serialize(matrices, JsonCtx.Default.MatrixJob));
 }
 else
 {
