@@ -66,19 +66,20 @@ jobs:
               .map(a => a.name)
               .filter(a => a.endsWith('.zip'))
               .map(a => '!' + a.substring(0, a.length - '.zip'.length))
-              .join(' ');
+              .join(' ')
+              .concat(['*']);
 
       - name: Compute matrix
         id: compute-matrix
         if: ${{ inputs.targets || steps.compute-targets.outputs.result }}
         env:
           TARGETS: ${{ inputs.targets || steps.compute-targets.outputs.result }}
-        run: dotnet run --project ./.github/workflows/gen-matrix/gen-matrix.csproj -c Release -- "$TARGETS"
+        run: dotnet run --project ./.github/workflows/gen-matrix/gen-matrix.csproj -c Release -- $TARGETS
 
   build:
     needs: [ setup ]
     strategy:
-      matrix: ${{ needs.setup.result == 'success' && fromJSON(needs.setup.outputs.jobs) || '' }}
+      matrix: ${{ needs.setup.result == 'success' && fromJSON(needs.setup.outputs.jobs) || null }}
       fail-fast: false
     name: ${{ matrix.name || 'Build' }}
     uses: ./.github/workflows/build.yml
