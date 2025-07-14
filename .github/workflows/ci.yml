@@ -97,7 +97,6 @@ jobs:
     name: ${{ matrix.name || 'Build' }}
     uses: ./.github/workflows/build.yml
     with:
-      tag-name: ${{ vars.TAG_NAME }}
       strategy: ${{ toJSON(matrix.strategy) }}
     secrets: inherit
     permissions:

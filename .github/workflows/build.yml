@@ -6,9 +6,6 @@ permissions:
 on:
   workflow_call:
     inputs:
-      tag-name:
-        required: true
-        type: string
       strategy:
         required: true
         type: string
@@ -17,6 +14,9 @@ on:
         required: true
       UNITY_PASSWORD:
         required: true
+
+env:
+  TAG_NAME: v0
 
 jobs:
   build:
@@ -106,8 +106,6 @@ jobs:
 
       - name: Update tag
         uses: actions/github-script@v7
-        env:
-          TAG_NAME: ${{ inputs.tag-name }}
         with:
           script: |
             const { TAG_NAME } = process.env;
@@ -128,7 +126,7 @@ jobs:
         if: github.ref == 'refs/heads/gen-matrix' # TODO
         uses: softprops/action-gh-release@72f2c25fcb47643c292f7107632f7a47c1df5cd8 # v2.3.2
         with:
-          tag_name: ${{ inputs.tag-name }}
+          tag_name: ${{ env.TAG_NAME }}
           files: ${{ matrix.name }}.zip
 
       - name: Upload logs
