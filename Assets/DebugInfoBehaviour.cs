@@ -18,7 +18,7 @@ public sealed class DebugInfoBehaviour : MonoBehaviour
         GUI.skin.label.fontSize = 16;
 
         GUI.skin.label.wordWrap = false;
-        _rect = GUILayout.Window(0, _rect, OnWindow, title, GUILayout.MinWidth(GUI.skin.label.CalcSize(new GUIContent(title)).x));
+        _rect = GUILayout.Window(0, _rect, OnWindow, title, GUILayout.MinWidth(GUI.skin.label.CalcSize(new GUIContent(title)).x + 25));
     }
 
     private void OnWindow(int id)
