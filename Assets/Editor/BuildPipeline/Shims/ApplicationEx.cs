@@ -1,3 +1,5 @@
+using System;
+using System.Linq;
 using System.Reflection;
 
 namespace UnityEngine
@@ -15,7 +17,12 @@ namespace UnityEngine
 #if UNITY_2018_2_OR_NEWER
                 return Application.isBatchMode;
 #else
-                return (bool)s_isBatchmode.GetValue(null, new object[0]);
+                if (s_isBatchmode != null)
+                {
+                    return (bool)s_isBatchmode.GetValue(null, new object[0]);
+                }
+
+                return Environment.GetCommandLineArgs().Contains("-batchmode", StringComparer.OrdinalIgnoreCase);
 #endif
             }
         }

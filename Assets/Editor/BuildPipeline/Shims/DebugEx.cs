@@ -1,5 +1,4 @@
-using System.Reflection;
-
+#if UNITY_5_3_OR_NEWER
 namespace UnityEngine
 {
     public static class DebugEx
@@ -17,3 +16,4 @@ namespace UnityEngine
         }
     }
 }
+#endif

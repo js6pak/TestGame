@@ -9,7 +9,10 @@ namespace Buildalon.Editor.BuildPipeline.Logging
     /// <summary>
     /// CI Logging interface.
     /// </summary>
-    public interface ICILogger : ILogHandler
+    public interface ICILogger
+#if UNITY_5_3_OR_NEWER
+        : ILogHandler
+#endif
     {
         /// <summary>
         /// Log message prefix.

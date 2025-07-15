@@ -1,6 +1,9 @@
+#if UNITY_5_0 || UNITY_5_1 || UNITY_5_2 || UNITY_5_3 || UNITY_5_3_OR_NEWER
+#define UNITY_5_0_OR_NEWER
+#endif
+
 using System;
 using System.Reflection;
-using JetBrains.Annotations;
 using UnityEngine;
 
 public sealed class DebugInfoBehaviour : MonoBehaviour
@@ -11,7 +14,11 @@ public sealed class DebugInfoBehaviour : MonoBehaviour
 
     private void OnGUI()
     {
+#if UNITY_5_0_OR_NEWER
         var title = string.Format("{0} ({1})", Application.productName, Application.version);
+#else
+        var title = "TestGame";
+#endif
 
         GUI.skin.window.font = font;
         GUI.skin.label.font = font;
@@ -30,7 +37,6 @@ public sealed class DebugInfoBehaviour : MonoBehaviour
         GUI.DragWindow(new Rect(0, 0, float.MaxValue, 20));
     }
 
-    [CanBeNull]
     private static readonly string MonoVersion;
 
     static DebugInfoBehaviour()

@@ -1,10 +1,7 @@
-using JetBrains.Annotations;
-
 namespace System
 {
     public static class StringEx
     {
-        [ContractAnnotation("value:null => true")]
         public static bool IsNullOrWhiteSpace(string value)
         {
 #if NET40_OR_GREATER

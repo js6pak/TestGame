@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using Buildalon.Editor.BuildPipeline;
 using Buildalon.Editor.BuildPipeline.Logging;
-using JetBrains.Annotations;
 using UnityEditor;
 #if UNITY_2018_1_OR_NEWER
 using UnityEditor.Build;
@@ -44,7 +43,7 @@ internal class UnityPlayerBuildTools
                     case BuildTarget.Android:
                         buildInfoInstance = new AndroidBuildInfo();
                         break;
-                    case BuildTarget.iOS:
+                    case BuildTargetEx.iOS:
                         buildInfoInstance = new IOSBuildInfo();
                         break;
                     // case BuildTarget.WSAPlayer:
@@ -67,7 +66,7 @@ internal class UnityPlayerBuildTools
             }
 
             buildInfo = buildInfoInstance;
-            Debug.Assert(buildInfo != null);
+            if (buildInfo == null) throw new ArgumentNullException("buildInfo");
 
             return buildInfo;
         }
@@ -77,11 +76,12 @@ internal class UnityPlayerBuildTools
     /// <summary>
     /// Start a build using command line arguments.
     /// </summary>
-    [UsedImplicitly]
     public static void StartCommandLineBuild()
     {
         // We don't need stack traces on all our logs. Makes things a lot easier to read.
+#if UNITY_5_4_OR_NEWER
         Application.SetStackTraceLogType(LogType.Log, StackTraceLogType.None);
+#endif
         Debug.Log("Starting command line build...");
 
         var buildReports = new HashSet<BuildReport>();
@@ -206,7 +206,9 @@ internal class UnityPlayerBuildTools
 //             PlayerSettings.visionOSBundleVersion = PlayerSettings.bundleVersion;
 // #endif // UNITY_6000_0_OR_NEWER
 
-        var buildTargetGroup = UnityEditor.BuildPipeline.GetBuildTargetGroup(buildInfo.BuildTarget);
+        var buildTargetGroup = BuildPipelineEx.GetBuildTargetGroup(buildInfo.BuildTarget);
+
+#if UNITY_5_6_OR_NEWER
 #if UNITY_2023_1_OR_NEWER
             var oldBuildIdentifier = PlayerSettings.GetApplicationIdentifier(NamedBuildTarget.FromBuildTargetGroup(buildTargetGroup));
 #else
@@ -221,6 +223,7 @@ internal class UnityPlayerBuildTools
             PlayerSettings.SetApplicationIdentifier(buildTargetGroup, buildInfo.BundleIdentifier);
 #endif // UNITY_2023_1_OR_NEWER
         }
+#endif
 
 #if UNITY_2023_1_OR_NEWER
             var playerBuildSymbols = PlayerSettings.GetScriptingDefineSymbols(NamedBuildTarget.FromBuildTargetGroup(buildTargetGroup));
@@ -309,7 +312,7 @@ internal class UnityPlayerBuildTools
                 {
                     PlayerSettings.SetApplicationIdentifier(NamedBuildTarget.FromBuildTargetGroup(buildTargetGroup), oldBuildIdentifier);
                 }
-#else
+#elif UNITY_5_6_OR_NEWER
             if (PlayerSettings.GetApplicationIdentifier(buildTargetGroup) != oldBuildIdentifier)
             {
                 PlayerSettings.SetApplicationIdentifier(buildTargetGroup, oldBuildIdentifier);

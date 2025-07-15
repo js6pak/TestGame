@@ -1,5 +1,27 @@
 <Project>
     <PropertyGroup>
+        <!-- <UnityVersion>5.6.3f1</UnityVersion> -->
+        <UnityVersion>4.7.2f1</UnityVersion>
+        <EditorPath>$(HOME)/Unity/Hub/Editor/$(UnityVersion)/Editor</EditorPath>
+
+        <OutputType>Library</OutputType>
+        <TargetFramework>net35</TargetFramework>
         <LangVersion>4</LangVersion>
+
+        <!--<DefineConstants>$(DefineConstants);UNITY_5_3_OR_NEWER;UNITY_5_4_OR_NEWER;UNITY_5_5_OR_NEWER;UNITY_5_6_OR_NEWER;UNITY_5_6_3;UNITY_5_6;UNITY_5</DefineConstants>-->
+        <DefineConstants>$(DefineConstants);UNITY_4_7_2;UNITY_4_7</DefineConstants>
+
+        <EnableDefaultItems>false</EnableDefaultItems>
+        <RootNamespace></RootNamespace>
     </PropertyGroup>
+
+    <ItemGroup>
+        <Reference Include="System"/>
+        <Reference Include="System.XML"/>
+        <Reference Include="System.Core"/>
+        <Reference Include="System.Runtime.Serialization"/>
+        <Reference Include="System.Xml.Linq"/>
+        <Reference Include="$(EditorPath)/Data/Managed/UnityEngine.dll"/>
+        <Reference Include="$(EditorPath)/Data/Managed/UnityEditor.dll"/>
+    </ItemGroup>
 </Project>

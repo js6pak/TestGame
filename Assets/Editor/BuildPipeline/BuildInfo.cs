@@ -28,7 +28,11 @@ namespace Buildalon.Editor.BuildPipeline
             {
                 if (StringEx.IsNullOrWhiteSpace(bundleIdentifier))
                 {
+#if UNITY_5_6_OR_NEWER
                     bundleIdentifier = PlayerSettings.applicationIdentifier;
+#else
+                    bundleIdentifier = PlayerSettings.bundleIdentifier;
+#endif
                 }
 
                 return bundleIdentifier;
@@ -36,7 +40,11 @@ namespace Buildalon.Editor.BuildPipeline
             set
             {
                 bundleIdentifier = value;
+#if UNITY_5_6_OR_NEWER
                 PlayerSettings.applicationIdentifier = bundleIdentifier;
+#else
+                PlayerSettings.bundleIdentifier = bundleIdentifier;
+#endif
             }
         }
 
@@ -247,9 +255,11 @@ namespace Buildalon.Editor.BuildPipeline
                                 BuildOptions = BuildOptions.SetFlag(BuildOptions.CompressWithLz4HC);
                                 break;
 #endif
+#if UNITY_5_6_OR_NEWER
                             case "LZ4":
                                 BuildOptions = BuildOptions.SetFlag(BuildOptions.CompressWithLz4);
                                 break;
+#endif
                             default:
                                 Debug.LogError(string.Format("Failed to parse -compressionMethod: \"{0}\"", compressionMethod));
                                 break;
@@ -350,8 +360,10 @@ namespace Buildalon.Editor.BuildPipeline
                         {
 #if UNITY_2023_1_OR_NEWER
                             PlayerSettings.SetApiCompatibilityLevel(UnityEditor.Build.NamedBuildTarget.FromBuildTargetGroup(BuildTargetGroup), apiCompatibility);
-#else
+#elif UNITY_5_6_OR_NEWER
                             PlayerSettings.SetApiCompatibilityLevel(BuildTargetGroup, apiCompatibility);
+#else
+                            PlayerSettings.apiCompatibilityLevel = apiCompatibility;
 #endif // UNITY_2023_1_OR_NEWER
                         }
                         else
@@ -369,22 +381,28 @@ namespace Buildalon.Editor.BuildPipeline
                             case "mono2x":
 #if UNITY_2023_1_OR_NEWER
                                 PlayerSettings.SetScriptingBackend(UnityEditor.Build.NamedBuildTarget.FromBuildTargetGroup(BuildTargetGroup), ScriptingImplementation.Mono2x);
-#else
+#elif UNITY_5_6_OR_NEWER
                                 PlayerSettings.SetScriptingBackend(BuildTargetGroup, ScriptingImplementation.Mono2x);
+#else
+                                PlayerSettings.SetPropertyInt("ScriptingBackend", (int)ScriptingImplementation.Mono2x, BuildTargetGroup);
 #endif // UNITY_2023_1_OR_NEWER
                                 break;
                             case "il2cpp":
 #if UNITY_2023_1_OR_NEWER
                                 PlayerSettings.SetScriptingBackend(UnityEditor.Build.NamedBuildTarget.FromBuildTargetGroup(BuildTargetGroup), ScriptingImplementation.IL2CPP);
-#else
+#elif UNITY_5_6_OR_NEWER
                                 PlayerSettings.SetScriptingBackend(BuildTargetGroup, ScriptingImplementation.IL2CPP);
+#else
+                                PlayerSettings.SetPropertyInt("ScriptingBackend", (int)ScriptingImplementation.IL2CPP, BuildTargetGroup);
 #endif // UNITY_2023_1_OR_NEWER
                                 break;
                             case "winrt":
 #if UNITY_2023_1_OR_NEWER
                                 PlayerSettings.SetScriptingBackend(UnityEditor.Build.NamedBuildTarget.FromBuildTargetGroup(BuildTargetGroup), ScriptingImplementation.WinRTDotNET);
-#else
+#elif UNITY_5_6_OR_NEWER
                                 PlayerSettings.SetScriptingBackend(BuildTargetGroup, ScriptingImplementation.WinRTDotNET);
+#else
+                                PlayerSettings.SetPropertyInt("ScriptingBackend", (int)ScriptingImplementation.WinRTDotNET, BuildTargetGroup);
 #endif // UNITY_2023_1_OR_NEWER
                                 break;
                             default:
@@ -403,6 +421,7 @@ namespace Buildalon.Editor.BuildPipeline
                         BuildOptions = BuildOptions.SetFlag(BuildOptions.EnableDeepProfilingSupport);
                         break;
 #endif
+#if UNITY_5_5_OR_NEWER
                     case "-appleTeamId":
                         var teamId = arguments[++i];
                         PlayerSettings.iOS.appleDeveloperTeamID = teamId;
@@ -426,6 +445,7 @@ namespace Buildalon.Editor.BuildPipeline
                         }
 
                         break;
+#endif
 #if UNITY_2018_1_OR_NEWER
                     case "-appleProvisioningProfileType":
                         var profileType = arguments[++i].ToLower();
@@ -570,8 +590,10 @@ namespace Buildalon.Editor.BuildPipeline
         {
 #if UNITY_6000_0_OR_NEWER
             var defaultIcons = PlayerSettings.GetIcons(UnityEditor.Build.NamedBuildTarget.FromBuildTargetGroup(BuildTargetGroup.Unknown), IconKind.Any);
-#else
+#elif UNITY_2017_1_OR_NEWER
             var defaultIcons = PlayerSettings.GetIconsForTargetGroup(BuildTargetGroup.Unknown, IconKind.Any);
+#else
+            var defaultIcons = PlayerSettings.GetIconsForTargetGroup(BuildTargetGroup.Unknown);
 #endif // UNITY_6000_0_OR_NEWER
             var icon = defaultIcons.Length > 0 ? defaultIcons[0] : null;
             if (icon != null)

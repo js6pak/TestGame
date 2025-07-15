@@ -1,5 +1,9 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
+#if UNITY_5_0 || UNITY_5_1 || UNITY_5_2 || UNITY_5_3 || UNITY_5_3_OR_NEWER
+#define UNITY_5_0_OR_NEWER
+#endif
+
 using System;
 using UnityEditor;
 using UnityEditor.Build.Reporting;
@@ -34,6 +38,7 @@ namespace Buildalon.Editor.BuildPipeline
             }
         }
 
+#if UNITY_5_0_OR_NEWER
         /// <inheritdoc />
         public override string FullOutputPath
         {
@@ -47,6 +52,7 @@ namespace Buildalon.Editor.BuildPipeline
                     : base.FullOutputPath;
             }
         }
+#endif
 
         public override void ParseCommandLineArgs()
         {
@@ -115,9 +121,11 @@ namespace Buildalon.Editor.BuildPipeline
                         PlayerSettings.Android.keyaliasPass = arguments[++i];
                         useCustomKeystore = true;
                         break;
+#if UNITY_5_0_OR_NEWER
                     case "-export":
                         EditorUserBuildSettings.exportAsGoogleAndroidProject = true;
                         break;
+#endif
                     case "-symbols":
 #if UNITY_6000_0_OR_NEWER
 #if PLATFORM_ANDROID

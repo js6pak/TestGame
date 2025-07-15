@@ -1,5 +1,4 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
-
 using UnityEditor;
 using UnityEditor.Build.Reporting;
 
@@ -9,12 +8,12 @@ namespace Buildalon.Editor.BuildPipeline
     {
         public override BuildTarget BuildTarget
         {
-            get { return BuildTarget.iOS; }
+            get { return BuildTargetEx.iOS; }
         }
 
         public override BuildTargetGroup BuildTargetGroup
         {
-            get { return BuildTargetGroup.iOS; }
+            get { return BuildTargetGroupEx.iOS; }
         }
 
         public override void OnPostProcessBuild(BuildReport report)

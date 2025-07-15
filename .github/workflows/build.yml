@@ -88,7 +88,7 @@ jobs:
         uses: js6pak/unity-action@main
         with:
           project-path: ${{ github.workspace }}
-          args: '-batchmode -force-graphics -quit -createProject "${{ github.workspace }}" -executeMethod TestGame.SetupAndBuild -buildTarget ${{ matrix.build_target }} -scriptingBackend ${{ matrix.scripting_implementation }} ${{ matrix.extra_args }}'
+          args: '-batchmode -force-graphics -quit -createProject "${{ github.workspace }}" -executeMethod TestGame.SetupAndBuild -buildTarget ${{ matrix.build_target_name }} -scriptingBackend ${{ matrix.scripting_implementation }} ${{ matrix.extra_args }}'
         timeout-minutes: 60
 
       - name: Zip

@@ -15,6 +15,7 @@ namespace Buildalon.Editor.BuildPipeline.Logging
     /// </summary>
     public abstract class AbstractCILogger : ICILogger
     {
+#if UNITY_5_3_OR_NEWER
         private readonly ILogHandler defaultLogger;
 
         protected AbstractCILogger()
@@ -71,6 +72,7 @@ namespace Buildalon.Editor.BuildPipeline.Logging
 
             defaultLogger.LogException(exception, context);
         }
+#endif
 
         /// <inheritdoc />
         public virtual string Log

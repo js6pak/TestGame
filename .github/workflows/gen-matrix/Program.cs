@@ -36,7 +36,7 @@ var unityVersions = ((string[])
     // "2017.2.5f1",
     // "2017.1.5f1",
     "5.6.7f1",
-    // "4.7.2f1",
+    "4.7.2",
 ]).Select(UnityVersion.Parse);
 
 static bool HasLinuxEditor(UnityVersion unityVersion)
@@ -76,13 +76,18 @@ foreach (var unityVersion in unityVersions)
 {
     var hasLinuxEditor = HasLinuxEditor(unityVersion);
 
-    var platforms = new[]
+    var platforms = new List<Platform>
     {
         Platform.Windows,
         Platform.MacOS,
         Platform.Linux,
-        Platform.Android,
     };
+
+    if (unityVersion.Major >= 5)
+    {
+        // There was no buildAndroidPlayer in Unity 4, and we can't build from scripts without Pro there
+        platforms.Add(Platform.Android);
+    }
 
     foreach (var platform in platforms)
     {
@@ -131,7 +136,7 @@ foreach (var unityVersion in unityVersions)
         {
             var supportsIl2Cpp = platform switch
             {
-                Platform.Android => true,
+                Platform.Android => unityVersion >= new UnityVersion(5, 2, 0, UnityVersionType.Beta, 1),
                 Platform.Windows or Platform.MacOS => unityVersion >= new UnityVersion(2018, 1, 0, UnityVersionType.Beta, 2),
                 Platform.Linux => unityVersion >= new UnityVersion(2019, 3, 0, UnityVersionType.Beta, 4),
                 _ => throw new ArgumentOutOfRangeException()
@@ -228,6 +233,30 @@ foreach (var unityVersion in unityVersions)
                     }).ToString());
                 }
 
+                // Workaround BuildPipeline.BuildPlayer requiring Pro before Unity 5
+                if (unityVersion.Major < 5)
+                {
+                    extraArgs.Add("-" + buildTarget switch
+                    {
+                        BuildTarget.StandaloneWindows => "buildWindowsPlayer",
+                        BuildTarget.StandaloneWindows64 => "buildWindows64Player",
+                        BuildTarget.StandaloneOSXUniversal => "buildOSXUniversalPlayer",
+                        BuildTarget.StandaloneOSXIntel => "buildOSXPlayer",
+                        BuildTarget.StandaloneOSXIntel64 => "buildOSX64Player",
+                        BuildTarget.StandaloneLinux => "buildLinux32Player",
+                        BuildTarget.StandaloneLinux64 => "buildLinux64Player",
+                        BuildTarget.Android => throw new NotSupportedException(),
+                        _ => throw new ArgumentOutOfRangeException(),
+                    });
+                    extraArgs.Add($"Builds/{buildTarget}/TestGame" + platform switch
+                    {
+                        Platform.Windows => ".exe",
+                        Platform.MacOS => ".app",
+                        Platform.Linux => "",
+                        Platform.Android => ".apk",
+                        _ => throw new ArgumentOutOfRangeException()
+                    });
+                }
 
                 var id = $"{unityVersion}-" +
                          $"{platform switch
@@ -285,9 +314,24 @@ foreach (var unityVersion in unityVersions)
                     Runner = runner.GetImageLabel(),
                     NeedsAndroidSdk = needsAndroidSdk,
                     NeedsAndroidNdk = needsAndroidNdk,
-                    UnityVersion = unityVersion,
+                    UnityVersion = unityVersion.Major >= 5 ? unityVersion.ToString() : unityVersion.ToStringWithoutType(),
                     Modules = string.Join(' ', modules),
                     BuildTarget = buildTarget,
+                    BuildTargetName = unityVersion.Major >= 5
+                        ? buildTarget.ToString()
+                        : buildTarget switch
+                        {
+                            BuildTarget.StandaloneOSX
+                                or BuildTarget.StandaloneOSXUniversal
+                                or BuildTarget.StandaloneOSXIntel
+                                or BuildTarget.StandaloneOSXIntel64 => "osx",
+                            BuildTarget.StandaloneWindows => "win64",
+                            BuildTarget.StandaloneWindows64 => "win32",
+                            BuildTarget.StandaloneLinux => "linux32",
+                            BuildTarget.StandaloneLinux64 => "linux64",
+                            BuildTarget.Android => "android",
+                            _ => throw new ArgumentOutOfRangeException(),
+                        },
                     ScriptingImplementation = scriptingImplementation,
                     ExtraArgs = string.Join(' ', extraArgs),
                 });
