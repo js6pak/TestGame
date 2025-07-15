@@ -59,6 +59,10 @@ internal class TestGame : AssetPostprocessor
         var scene = EditorSceneManager.NewScene(NewSceneSetup.DefaultGameObjects, NewSceneMode.Single);
 #else
         EditorApplication.NewScene();
+
+        var light = new GameObject("Directional Light").AddComponent<Light>();
+        light.type = LightType.Directional;
+        light.intensity = 0.5f;
 #endif
 
         var cube = GameObject.CreatePrimitive(PrimitiveType.Cube);
