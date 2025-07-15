@@ -45,6 +45,7 @@ sysinfo.txt
 # Unity project is generated programatically
 Assets/**/*.meta
 Assets/**/*.unity
+Assets/MainScene/
 ProjectSettings
 Packages
 

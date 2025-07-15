@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
@@ -30,6 +31,7 @@ internal static class TestGame
             : "local";
 
         CreateMainScene();
+        BakeLighting();
 
         UnityPlayerBuildTools.StartCommandLineBuild();
     }
@@ -52,5 +54,27 @@ internal static class TestGame
         {
             new EditorBuildSettingsScene(scene.path, true),
         };
+
+        EditorSceneManager.MarkAllScenesDirty();
+    }
+
+    private static void BakeLighting()
+    {
+        Lightmapping.Clear();
+        Lightmapping.ClearDiskCache();
+        Lightmapping.ClearLightingDataAsset();
+
+        Lightmapping.giWorkflowMode = Lightmapping.GIWorkflowMode.OnDemand;
+
+        if (Environment.GetCommandLineArgs().Contains("-nographics", StringComparer.OrdinalIgnoreCase))
+        {
+            Debug.LogWarning("Running with -nographics, lighting data will be incorrect");
+        }
+
+        Debug.Log("Calling Lightmapping.Bake");
+        if (!Lightmapping.Bake())
+        {
+            Debug.LogWarning("Lightmapping.Bake failed");
+        }
     }
 }
