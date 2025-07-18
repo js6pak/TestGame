@@ -124,7 +124,7 @@ jobs:
 
       - name: Release
         if: github.ref == 'refs/heads/gen-matrix' # TODO
-        uses: softprops/action-gh-release@72f2c25fcb47643c292f7107632f7a47c1df5cd8 # v2.3.2
+        uses: js6pak/action-gh-release@master
         with:
           tag_name: ${{ env.TAG_NAME }}
           files: ${{ matrix.name }}.zip

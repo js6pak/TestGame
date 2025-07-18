@@ -12,7 +12,6 @@
         <DefineConstants>$(DefineConstants);UNITY_4_7_2;UNITY_4_7</DefineConstants>
 
         <EnableDefaultItems>false</EnableDefaultItems>
-        <RootNamespace></RootNamespace>
     </PropertyGroup>
 
     <ItemGroup>
