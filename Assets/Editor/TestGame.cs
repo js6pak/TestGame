@@ -9,11 +9,15 @@ using UnityEditor;
 using UnityEditor.SceneManagement;
 #endif
 using UnityEngine;
+using Debug = UnityEngine.Debug;
 
 internal class TestGame : AssetPostprocessor
 {
     public static void SetupAndBuild()
     {
+#if UNITY_5_4_OR_NEWER
+        Application.SetStackTraceLogType(LogType.Log, StackTraceLogType.None);
+#endif
         Debug.Log("TestGame.SetupAndBuild");
 
         EditorSettings.serializationMode = SerializationMode.ForceText;
@@ -109,6 +113,11 @@ internal class TestGame : AssetPostprocessor
         {
             Debug.LogWarning("Running with -nographics, lighting data will be incorrect");
         }
+
+#if UNITY_EDITOR_OSX && UNITY_2021_1_OR_NEWER && !UNITY_2023_1_OR_NEWER
+        Debug.LogWarning("Unity 2021/2022's light baking hangs on MacOS, for some reason, skipping");
+        return;
+#endif
 
         Debug.Log("Calling Lightmapping.Bake");
         if (!Lightmapping.Bake())
