@@ -1,26 +1,35 @@
 <Project>
     <PropertyGroup>
-        <!-- <UnityVersion>5.6.3f1</UnityVersion> -->
-        <UnityVersion>4.7.2f1</UnityVersion>
-        <EditorPath>$(HOME)/Unity/Hub/Editor/$(UnityVersion)/Editor</EditorPath>
+        <Configuration Condition="'$(Configuration)' == ''">UNITY_4_7_2</Configuration>
 
         <OutputType>Library</OutputType>
         <TargetFramework>net35</TargetFramework>
         <LangVersion>4</LangVersion>
-
-        <!--<DefineConstants>$(DefineConstants);UNITY_5_3_OR_NEWER;UNITY_5_4_OR_NEWER;UNITY_5_5_OR_NEWER;UNITY_5_6_OR_NEWER;UNITY_5_6_3;UNITY_5_6;UNITY_5</DefineConstants>-->
-        <DefineConstants>$(DefineConstants);UNITY_4_7_2;UNITY_4_7</DefineConstants>
-
+        <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
         <EnableDefaultItems>false</EnableDefaultItems>
     </PropertyGroup>
 
+    <PropertyGroup Condition="'$(Configuration)' == 'UNITY_4_7_2'">
+        <UnityVersion>4.7.2f1</UnityVersion>
+        <DefineConstants>$(DefineConstants);UNITY_4_7_2;UNITY_4_7</DefineConstants>
+    </PropertyGroup>
+
+    <PropertyGroup Condition="'$(Configuration)' == 'UNITY_5_6_3'">
+        <UnityVersion>5.6.3f1</UnityVersion>
+        <DefineConstants>$(DefineConstants);UNITY_5_3_OR_NEWER;UNITY_5_4_OR_NEWER;UNITY_5_5_OR_NEWER;UNITY_5_6_OR_NEWER;UNITY_5_6_3;UNITY_5_6;UNITY_5</DefineConstants>
+    </PropertyGroup>
+
+    <PropertyGroup>
+        <EditorPath>$(HOME)/Unity/Hub/Editor/$(UnityVersion)/Editor</EditorPath>
+    </PropertyGroup>
+
     <ItemGroup>
-        <Reference Include="System"/>
-        <Reference Include="System.XML"/>
-        <Reference Include="System.Core"/>
-        <Reference Include="System.Runtime.Serialization"/>
-        <Reference Include="System.Xml.Linq"/>
-        <Reference Include="$(EditorPath)/Data/Managed/UnityEngine.dll"/>
-        <Reference Include="$(EditorPath)/Data/Managed/UnityEditor.dll"/>
+        <Reference Include="System" />
+        <Reference Include="System.XML" />
+        <Reference Include="System.Core" />
+        <Reference Include="System.Runtime.Serialization" />
+        <Reference Include="System.Xml.Linq" />
+        <Reference Include="$(EditorPath)/Data/Managed/UnityEngine.dll" />
+        <Reference Include="$(EditorPath)/Data/Managed/UnityEditor.dll" />
     </ItemGroup>
 </Project>

@@ -32,12 +32,14 @@ public sealed class DebugInfoBehaviour : MonoBehaviour
     {
         GUILayout.Label("Unity: " + Application.unityVersion);
         GUILayout.Label("Platform: " + Application.platform);
-        if (MonoVersion != null) GUILayout.Label("Mono: " + MonoVersion);
+        if (FrameworkDescription != null) GUILayout.Label("Runtime: " + FrameworkDescription);
+        else if (MonoVersion != null) GUILayout.Label("Mono: " + MonoVersion);
 
         GUI.DragWindow(new Rect(0, 0, float.MaxValue, 20));
     }
 
     private static readonly string MonoVersion;
+    private static readonly string FrameworkDescription;
 
     static DebugInfoBehaviour()
     {
@@ -54,5 +56,50 @@ public sealed class DebugInfoBehaviour : MonoBehaviour
                 MonoVersion = "<unknown>";
             }
         }
+
+        var runtimeInformationType = Type.GetType("System.Runtime.InteropServices.RuntimeInformation");
+        if (runtimeInformationType != null)
+        {
+            var frameworkDescriptionProperty = runtimeInformationType.GetProperty("FrameworkDescription", BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Static);
+            if (frameworkDescriptionProperty != null)
+            {
+                FrameworkDescription = (string)frameworkDescriptionProperty.GetValue(null, null);
+
+                if (FrameworkDescription.StartsWith(".NET ", StringComparison.Ordinal) && char.IsDigit(FrameworkDescription[5]))
+                {
+                    if (Type.GetType("Mono.RuntimeStructs") != null)
+                    {
+                        FrameworkDescription += " (Mono)";
+                    }
+                    else if (IsDynamicCodeCompiled() == false)
+                    {
+                        FrameworkDescription += " (NativeAOT)";
+                    }
+                    else
+                    {
+                        FrameworkDescription += " (CoreCLR)";
+                    }
+                }
+            }
+            else
+            {
+                FrameworkDescription = "<unknown>";
+            }
+        }
+    }
+
+    private static bool? IsDynamicCodeCompiled()
+    {
+        var runtimeFeatureType = Type.GetType("System.Runtime.CompilerServices.RuntimeFeature");
+        if (runtimeFeatureType != null)
+        {
+            var isDynamicCodeCompiledProperty = runtimeFeatureType.GetProperty("IsDynamicCodeCompiled", BindingFlags.Public | BindingFlags.Static);
+            if (isDynamicCodeCompiledProperty != null)
+            {
+                return (bool)isDynamicCodeCompiledProperty.GetValue(null, null);
+            }
+        }
+
+        return null;
     }
 }
