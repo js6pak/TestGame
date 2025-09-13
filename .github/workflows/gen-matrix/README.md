@@ -1,0 +1,1 @@
+Based on [MonoMod's gen-test-matrix](https://github.com/MonoMod/MonoMod/tree/7df62b4a7f14fe8cf4b62ba5bd58326795ee3566/build/gen-test-matrix)

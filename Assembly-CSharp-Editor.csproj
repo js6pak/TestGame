@@ -1,0 +1,11 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <AssemblyName>Assembly-CSharp-Editor</AssemblyName>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <Compile Include="Assets\Editor\**\*.cs" Link="%(RecursiveDir)%(Filename)%(Extension)"/>
+
+        <ProjectReference Include="Assembly-CSharp.csproj" />
+    </ItemGroup>
+</Project>

@@ -1,107 +1,145 @@
 name: Build
 
-on: [ push, pull_request, workflow_dispatch ]
+permissions:
+  contents: read
+
+on:
+  workflow_call:
+    inputs:
+      strategy:
+        required: true
+        type: string
+    secrets:
+      UNITY_EMAIL:
+        required: true
+      UNITY_PASSWORD:
+        required: true
+
+env:
+  TAG_NAME: v0
 
 jobs:
   build:
-    strategy:
-      fail-fast: false
-      matrix:
-        unity-version:
-          - 2020.3.22f1 # Among Us
-          - 2022.2.6f1
-          - 2021.3.18f1
-          - 2020.3.44f1
-          - 2019.4.40f1
-          - 2018.4.36f1
-        target-platform: [ StandaloneWindows64, StandaloneWindows, StandaloneLinux64, StandaloneOSX, Android ]
-        scripting-backend: [ Mono, IL2CPP ]
+    name: ${{ matrix.name }}
+    strategy: ${{ fromJSON(inputs.strategy) }}
+    runs-on: ${{ matrix.runner }}
 
-        exclude:
-          # Unity versions before 2019.3 do not support il2cpp
-          - unity-version: 2018.4.36f1
-            scripting-backend: IL2CPP
-          # https://github.com/game-ci/unity-builder/issues/489
-          - unity-version: 2022.2.6f1
-            target-platform: Android
-        # x32 linux is not supported by game-ci
-        #include:
-        # - unity-version: 2018.4.36f1
-        #   target-platform: StandaloneLinux
-        #   scripting-backend: Mono
+    env:
+      # Avoid pre-installed modern platforms which crash Unity <2019
+      ANDROID_SDK_ROOT: ${{ github.workspace }}/android
 
-    runs-on: ${{
-      (startsWith( matrix.target-platform, 'StandaloneWindows' ) && matrix.scripting-backend == 'IL2CPP') && 'windows-2019' ||
-      (startsWith( matrix.target-platform, 'StandaloneOSX' ) && matrix.scripting-backend == 'IL2CPP') && 'macos-latest' ||
-      'ubuntu-latest'
-      }}
-    name: ${{ matrix.unity-version }} ${{ matrix.target-platform }} ${{ matrix.scripting-backend }}
-
-    steps:
-      - id: set-vars
-        uses: actions/github-script@v6
-        with:
-          script: |
-            const scriptingBackend = "${{ matrix.scripting-backend }}";
-            core.setOutput("scripting-backend", scriptingBackend === "Mono" ? "Mono2x" : scriptingBackend);
-
-      - uses: actions/checkout@v3
-
-      - uses: actions/cache@v3
-        with:
-          path: Library
-          key:
-            Library-${{ matrix.target-platform }}-${{ hashFiles('Assets/**', 'Packages/**', 'ProjectSettings/**') }}
-          restore-keys: |
-            Library-${{ matrix.target-platform }}-
-            Library-
-
-      - uses: js6pak/unity-builder@main
-        timeout-minutes: 60
-        env:
-          UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
-          UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
-          UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
-        with:
-          unityVersion: ${{ matrix.unity-version }}
-          targetPlatform: ${{ matrix.target-platform }}
-          versioning: None
-          allowDirtyBuild: true
-          buildName: TestGame
-          buildMethod: UnityBuilderAction.Builder.BuildProject
-          androidSymbolType: debugging
-          customParameters: -scriptingBackend ${{ steps.set-vars.outputs.scripting-backend }}
-
-      - uses: actions/upload-artifact@v3
-        with:
-          name: TestGame-${{ matrix.unity-version }}-${{ matrix.target-platform }}-${{ matrix.scripting-backend }}
-          path: ./build/${{ matrix.target-platform }}
-
-  create_release:
-    if: github.event_name != 'pull_request'
     permissions:
       contents: write
-    needs:
-      - build
-    runs-on: ubuntu-latest
 
     steps:
-      - name: Download artifacts
-        uses: actions/download-artifact@v3
+      - uses: actions/checkout@v4
+
+      - name: Setup Android Sdk
+        if: matrix.needs_android_sdk
+        uses: android-actions/setup-android@9fc6c4e9069bf8d3d10b2204b1fb8f6ef7065407 # v3.2.2
         with:
-          path: artifacts
-      - name: Collect files
-        id: collect-info
+          packages: 'tools platforms;android-29 build-tools;29.0.3'
+
+      - name: Setup Java 8
+        if: matrix.needs_android_sdk
+        shell: bash
         run: |
-          mkdir release
-          cd artifacts
-          for i in */; do (cd "${i%/}" && zip -0 -r "../../release/${i%/}.zip" *) & done; wait
-      - name: Create release
-        uses: marvinpinto/action-automatic-releases@latest
+          echo "JAVA_HOME=$JAVA_HOME_8_X64" >>"$GITHUB_ENV"
+          echo "$JAVA_HOME_8_X64/bin" >>"$GITHUB_PATH"
+
+      - name: Setup Android Ndk
+        if: matrix.needs_android_ndk
+        shell: bash
+        env:
+          NDK_VERSION: '${{ matrix.needs_android_ndk }}'
+        run: |
+          if [[ "$OSTYPE" == "linux"* ]]; then
+              PLATFORM="linux-x86_64"
+          elif [[ "$OSTYPE" == "darwin"* ]]; then
+              PLATFORM="darwin-x86_64"
+          elif [[ "$OSTYPE" == "msys" || "$OSTYPE" == "cygwin" || "$OSTYPE" == "win32" ]]; then
+              PLATFORM="windows-x86_64"
+          else
+              echo "Unsupported operating system: $OSTYPE"
+              exit 1
+          fi
+          curl -LO "https://dl.google.com/android/repository/android-ndk-$NDK_VERSION-$PLATFORM.zip"
+          unzip android-ndk-"$NDK_VERSION"-*.zip
+          ANDROID_NDK_HOME="${{ github.workspace }}/android-ndk-$NDK_VERSION"
+          echo "ANDROID_NDK_HOME=$ANDROID_NDK_HOME" >>"$GITHUB_ENV"
+          echo "ANDROID_NDK_ROOT=$ANDROID_NDK_HOME" >>"$GITHUB_ENV"
+
+      - name: Setup Unity
+        uses: js6pak/unity-setup@main
         with:
-          repo_token: "${{ secrets.GITHUB_TOKEN }}"
-          prerelease: ${{ github.ref_type != 'tag' }}
-          automatic_release_tag: ${{ github.ref_type != 'tag' && 'latest' || null }}
-          title: ${{ github.ref_type != 'tag' && format('Build {0}', github.run_number) || null }}
-          files: |
-            release/*.zip
+          version-file: 'None'
+          unity-version: ${{ matrix.unity_version }}
+          modules: ${{ matrix.modules || 'None' }}
+          install-path: '${{ runner.tool_cache }}/unity'
+
+      - name: Activate Unity
+        uses: js6pak/activate-unity-license@main
+        with:
+          license: 'Personal'
+          username: ${{ secrets.UNITY_EMAIL }}
+          password: ${{ secrets.UNITY_PASSWORD }}
+
+      - name: Build
+        uses: js6pak/unity-action@main
+        with:
+          project-path: ${{ github.workspace }}
+          args: '-batchmode -force-graphics -quit -createProject "${{ github.workspace }}" -executeMethod TestGame.SetupAndBuild -buildTarget ${{ matrix.build_target_name }} -scriptingBackend ${{ matrix.scripting_implementation }} ${{ matrix.extra_args }}'
+        timeout-minutes: 60
+
+      - name: Zip
+        shell: bash
+        run: |
+          cd "./Builds/${{ matrix.build_target }}"
+          7z a -tzip "../../${{ matrix.name }}.zip" *
+
+      - name: Upload
+        uses: actions/upload-artifact@v4
+        with:
+          retention-days: 1
+          name: TestGame ${{ matrix.name }}
+          path: ./Builds/${{ matrix.build_target }}/*
+
+      - name: Update tag
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { TAG_NAME } = process.env;
+
+            try {
+              console.log(await github.rest.git.updateRef({
+                ...context.repo,
+                ref: 'tags/' + TAG_NAME,
+                sha: context.sha,
+                force: true,
+              }));
+            } catch (e) {
+              if (e.status === 422 && e.response?.data?.message === 'Reference does not exist') return;
+              throw e;
+            }
+
+      - name: Release
+        if: github.ref == 'refs/heads/master'
+        uses: js6pak/action-gh-release@master
+        with:
+          tag_name: ${{ env.TAG_NAME }}
+          files: ${{ matrix.name }}.zip
+
+      - name: Upload logs
+        uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          retention-days: 1
+          name: Logs ${{ matrix.name }}
+          path: |
+            ${{ github.workspace }}/**/*.log
+
+      - name: Setup tmate session
+        if: failure() && github.run_attempt != 1
+        uses: mxschmitt/action-tmate@7b6a61a73bbb9793cb80ad69b8dd8ac19261834c # v3.22
+        with:
+          detached: true

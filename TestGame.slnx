@@ -1,0 +1,14 @@
+<Solution>
+    <Configurations>
+        <BuildType Name="UNITY_4_7_2" />
+        <BuildType Name="UNITY_5_6_3" />
+    </Configurations>
+
+    <Project Path=".github\workflows\gen-matrix\gen-matrix.csproj">
+        <BuildType Project="Release" />
+        <Configuration Solution="*|*" Project="Release|*" />
+    </Project>
+
+    <Project Path="Assembly-CSharp-Editor.csproj" />
+    <Project Path="Assembly-CSharp.csproj" />
+</Solution>
