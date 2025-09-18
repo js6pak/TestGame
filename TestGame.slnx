@@ -1,5 +1,6 @@
 <Solution>
     <Configurations>
+        <BuildType Name="UNITY_4_0_0" />
         <BuildType Name="UNITY_4_7_2" />
         <BuildType Name="UNITY_5_6_3" />
     </Configurations>

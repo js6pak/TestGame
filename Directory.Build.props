@@ -1,12 +1,17 @@
 <Project>
     <PropertyGroup>
-        <Configuration Condition="'$(Configuration)' == ''">UNITY_4_7_2</Configuration>
+        <Configuration Condition="'$(Configuration)' == ''">UNITY_4_0_0</Configuration>
 
         <OutputType>Library</OutputType>
         <TargetFramework>net35</TargetFramework>
         <LangVersion>4</LangVersion>
         <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
         <EnableDefaultItems>false</EnableDefaultItems>
+    </PropertyGroup>
+
+    <PropertyGroup Condition="'$(Configuration)' == 'UNITY_4_0_0'">
+        <UnityVersion>4.0.0</UnityVersion>
+        <DefineConstants>$(DefineConstants);UNITY_4_0</DefineConstants>
     </PropertyGroup>
 
     <PropertyGroup Condition="'$(Configuration)' == 'UNITY_4_7_2'">

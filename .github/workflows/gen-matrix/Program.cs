@@ -95,6 +95,12 @@ var unityVersions = ((string[])
     "5.1.5f1",
     "5.0.4f1",
     "4.7.2",
+    "4.6.9",
+    "4.5.5",
+    "4.3.4",
+    "4.2.1",
+    "4.1.5",
+    "4.0.1",
 ]).Select(UnityVersion.Parse);
 
 static bool HasLinuxEditor(UnityVersion unityVersion)

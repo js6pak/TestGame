@@ -1,5 +1,9 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
+#if UNITY_5_0 || UNITY_5_1 || UNITY_5_2 || UNITY_5_3 || UNITY_5_3_OR_NEWER
+#define UNITY_5_0_OR_NEWER
+#endif
+
 using Buildalon.Editor.BuildPipeline.Logging;
 using System;
 using System.Collections.Generic;
@@ -139,8 +143,10 @@ namespace Buildalon.Editor.BuildPipeline
 // #endif
 #if UNITY_2017_3_OR_NEWER
                     case BuildTarget.StandaloneOSX:
-#else
+#elif !UNITY_4_0 // UNITY_4_1_OR_NEWER
                     case BuildTarget.StandaloneOSXUniversal:
+#else
+                    case BuildTarget.StandaloneOSXIntel:
 #endif
 // #if PLATFORM_STANDALONE_OSX
                         // return UnityEditor.OSXStandalone.UserBuildSettings.createXcodeProject ? string.Format("{0}{1}", Path.DirectorySeparatorChar, Application.productName) : ".app";
@@ -374,6 +380,7 @@ namespace Buildalon.Editor.BuildPipeline
 
                         break;
                     case "-scriptingBackend":
+#if UNITY_5_0_OR_NEWER
                         var scriptingBackendString = arguments[++i].ToLower();
 
                         switch (scriptingBackendString)
@@ -410,6 +417,7 @@ namespace Buildalon.Editor.BuildPipeline
                                 Debug.LogError(string.Format("Unsupported -scriptingBackend: \"{0}\"", scriptingBackendString));
                                 break;
                         }
+#endif
 
                         break;
                     case "-autoConnectProfiler":
@@ -599,8 +607,6 @@ namespace Buildalon.Editor.BuildPipeline
             var icon = defaultIcons.Length > 0 ? defaultIcons[0] : null;
             if (icon != null)
             {
-                var background = AssetDatabase.GetBuiltinExtraResource<Texture2D>("Default-Checker-Gray.png");
-
 #if UNITY_2018_1_OR_NEWER
 #if UNITY_6000_0_OR_NEWER
                 var platformIconKinds = PlayerSettings.GetSupportedIconKinds(UnityEditor.Build.NamedBuildTarget.FromBuildTargetGroup(BuildTargetGroup));
@@ -636,6 +642,7 @@ namespace Buildalon.Editor.BuildPipeline
                                 try
                                 {
                                     Debug.LogWarning(string.Format("Setting {0}:{1} to Default-Checker-Gray", platformIcon.kind, platformIcon));
+                                    var background = AssetDatabase.GetBuiltinExtraResource<Texture2D>("Default-Checker-Gray.png");
                                     platformIcon.SetTexture(background, i);
                                 }
                                 catch (Exception e)
