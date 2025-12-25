@@ -20,7 +20,7 @@ if (args is ["gather-versions"])
             query =
                 """
                 query GetVersions {
-                	getUnityReleases(limit: 10000, stream: [TECH, LTS, SUPPORTED]) {
+                	getUnityReleases(limit: 10000) {
                 		totalCount
                 		pageInfo {
                 			hasNextPage
@@ -44,7 +44,6 @@ if (args is ["gather-versions"])
     var versions =
         body!["data"]!["getUnityReleases"]!["edges"]!.AsArray()
             .Select(e => UnityVersion.Parse(e!["node"]!["version"]!.ToString()))
-            .Where(v => v.Type == UnityVersionType.Final)
             .OrderDescending()
             .GroupBy(v => (v.Major, v.Minor));
 
@@ -61,46 +60,50 @@ var jobs = new List<BuildJobData>();
 
 var unityVersions = ((string[])
 [
-    "6000.2.4f1",
-    "6000.1.16f1",
-    "6000.0.57f1",
-    "2023.2.20f1",
-    "2023.1.20f1",
-    "2022.3.62f1",
-    "2022.2.21f1",
-    "2022.1.24f1",
-    "2021.3.45f1",
-    "2021.2.19f1",
-    "2021.1.28f1",
-    "2020.3.48f1",
-    "2020.2.7f1",
-    "2020.1.17f1",
-    "2019.4.40f1",
-    "2019.3.15f1",
-    "2019.2.21f1",
-    "2019.1.14f1",
+    "6000.5.0a3",
+    "6000.4.0b2",
+    "6000.3.2f1",
+    "6000.2.15f1",
+    "6000.1.17f1",
+    "6000.0.64f1",
+    "2023.3.0b10",
+    "2023.2.22f1",
+    "2023.1.22f1",
+    "2022.3.62f3",
+    "2022.2.23f1",
+    "2022.1.25f1",
+    "2021.3.45f2",
+    "2021.2.20f1",
+    "2021.1.29f1",
+    "2020.3.49f1",
+    "2020.2.8f1",
+    "2020.1.18f1",
+    "2019.4.41f2",
+    "2019.3.17f1",
+    "2019.2.23f1",
+    "2019.1.15f1",
     "2018.4.36f1",
     "2018.3.14f1",
     "2018.2.21f1",
     "2018.1.9f2",
     "2017.4.40f1",
-    "2017.3.1f1",
+    "2017.3.1p4",
     "2017.2.5f1",
     "2017.1.5f1",
     "5.6.7f1",
     "5.5.6f1",
     "5.4.6f3",
-    "5.3.8f2",
+    "5.3.8p2",
     "5.2.5f1",
     "5.1.5f1",
     "5.0.4f1",
     "4.7.2",
     "4.6.9",
     "4.5.5",
-    "4.3.4",
-    "4.2.1",
-    "4.1.5",
-    "4.0.1",
+    // "4.3.4",
+    // "4.2.1",
+    // "4.1.5",
+    // "4.0.1",
 ]).Select(UnityVersion.Parse);
 
 static bool HasLinuxEditor(UnityVersion unityVersion)
@@ -139,6 +142,12 @@ if (includes.Count == 0)
 foreach (var unityVersion in unityVersions)
 {
     var hasLinuxEditor = HasLinuxEditor(unityVersion);
+
+    // Unity 2017.4-2018.4 lightmapping often hangs on Linux
+    if (unityVersion.GreaterThanOrEquals(2017, 4) && unityVersion.LessThan(2019))
+    {
+        hasLinuxEditor = false;
+    }
 
     var platforms = new List<Platform>
     {
@@ -222,7 +231,7 @@ foreach (var unityVersion in unityVersions)
 
             // IL2CPP builds break on Unity <=2020 on modern MacOS
             // TODO find a workaround?
-            if (platform == Platform.MacOS && (unityVersion.Major <= 2020 || unityVersion is { Major: <= 2023, Minor: < 3 }))
+            if (platform == Platform.MacOS && (unityVersion.Major <= 2020 || unityVersion is { Major: <= 2023, Minor: < 3 } || unityVersion is { Major: 2023, Minor: 3 }))
             {
                 supportsIl2Cpp = false;
             }
@@ -256,8 +265,7 @@ foreach (var unityVersion in unityVersions)
                     ScriptingImplementation.Mono2x => hasLinuxEditor ? RunnerOperatingSystem.Linux : RunnerOperatingSystem.Windows,
                     ScriptingImplementation.IL2CPP => platform switch
                     {
-                        Platform.Linux => hasLinuxEditor ? RunnerOperatingSystem.Linux : throw new UnreachableException(),
-                        Platform.Android => hasLinuxEditor ? RunnerOperatingSystem.Linux : RunnerOperatingSystem.Windows,
+                        Platform.Linux or Platform.Android => hasLinuxEditor ? RunnerOperatingSystem.Linux : RunnerOperatingSystem.Windows,
                         Platform.Windows => RunnerOperatingSystem.Windows,
                         Platform.MacOS => RunnerOperatingSystem.MacOS,
                         _ => throw new ArgumentOutOfRangeException(),

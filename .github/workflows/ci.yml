@@ -5,6 +5,8 @@ permissions:
 
 on:
   push:
+    branches: [ '**' ]
+    tags-ignore: [ '**' ]
   workflow_dispatch:
     inputs:
       targets:
@@ -24,7 +26,7 @@ jobs:
       DOTNET_TELEMETRY_OPTOUT: true
       DOTNET_NOLOGO: true
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           sparse-checkout: .github/workflows
 
@@ -37,7 +39,7 @@ jobs:
       - name: Compute targets
         if: ${{ !inputs.targets }}
         id: compute-targets
-        uses: actions/github-script@v7
+        uses: actions/github-script@v8
         with:
           result-encoding: 'string'
           script: |

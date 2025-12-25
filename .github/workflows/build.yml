@@ -32,7 +32,25 @@ jobs:
       contents: write
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
+
+      - uses: endersonmenezes/free-disk-space@e6ed9b02e683a3b55ed0252f1ee469ce3b39a885 # v3.1.0
+        if: startsWith(matrix.runner, 'ubuntu-')
+        with:
+          remove_android: true
+          remove_dotnet: true
+          remove_haskell: true
+          remove_folders: "/usr/share/swift"
+          rm_cmd: rmz
+
+      - name: Setup Linux
+        if: startsWith(matrix.runner, 'ubuntu-')
+        run: |
+          sudo sysctl -w fs.file-max=9223372036854775807
+
+          # TODO remove once RageAgainstThePixel/unity-setup installs it for 2022.1
+          curl -LO https://archive.ubuntu.com/ubuntu/pool/main/o/openssl/libssl1.1_1.1.0g-2ubuntu4_amd64.deb
+          sudo dpkg -i libssl1.1_1.1.0g-2ubuntu4_amd64.deb
 
       - name: Setup Android Sdk
         if: matrix.needs_android_sdk
@@ -70,7 +88,7 @@ jobs:
           echo "ANDROID_NDK_ROOT=$ANDROID_NDK_HOME" >>"$GITHUB_ENV"
 
       - name: Setup Unity
-        uses: js6pak/unity-setup@main
+        uses: RageAgainstThePixel/unity-setup@c09c3b3eb44c708fd942b5ac522f187bb2b2c175 # v2.3.0
         with:
           version-file: 'None'
           unity-version: ${{ matrix.unity_version }}
@@ -78,17 +96,22 @@ jobs:
           install-path: '${{ runner.tool_cache }}/unity'
 
       - name: Activate Unity
-        uses: js6pak/activate-unity-license@main
+        uses: RageAgainstThePixel/activate-unity-license@7e95a07b2fa896158e6a7f7f4233f6e6c273ccc8 # v2.1.0
         with:
           license: 'Personal'
           username: ${{ secrets.UNITY_EMAIL }}
           password: ${{ secrets.UNITY_PASSWORD }}
 
-      - name: Build
-        uses: js6pak/unity-action@main
+      - name: Create project
+        uses: RageAgainstThePixel/unity-action@12f66296a6863de5162a28fea33efdfcbb2bad2d # v3.0.4
         with:
-          project-path: ${{ github.workspace }}
-          args: '-batchmode -force-graphics -quit -createProject "${{ github.workspace }}" -executeMethod TestGame.SetupAndBuild -buildTarget ${{ matrix.build_target_name }} -scriptingBackend ${{ matrix.scripting_implementation }} ${{ matrix.extra_args }}'
+          args: '-batchmode -force-graphics -quit -createProject "${{ github.workspace }}"'
+        timeout-minutes: 5
+
+      - name: Build
+        uses: RageAgainstThePixel/unity-action@12f66296a6863de5162a28fea33efdfcbb2bad2d # v3.0.4
+        with:
+          args: '-batchmode -force-graphics -quit -projectPath "${{ github.workspace }}" -executeMethod TestGame.SetupAndBuild -buildTarget ${{ matrix.build_target_name }} -scriptingBackend ${{ matrix.scripting_implementation }} ${{ matrix.extra_args }}'
         timeout-minutes: 60
 
       - name: Zip
@@ -98,14 +121,14 @@ jobs:
           7z a -tzip "../../${{ matrix.name }}.zip" *
 
       - name: Upload
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           retention-days: 1
           name: TestGame ${{ matrix.name }}
           path: ./Builds/${{ matrix.build_target }}/*
 
       - name: Update tag
-        uses: actions/github-script@v7
+        uses: actions/github-script@v8
         with:
           script: |
             const { TAG_NAME } = process.env;
@@ -130,7 +153,7 @@ jobs:
           files: ${{ matrix.name }}.zip
 
       - name: Upload logs
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         if: failure()
         with:
           retention-days: 1
@@ -140,6 +163,6 @@ jobs:
 
       - name: Setup tmate session
         if: failure() && github.run_attempt != 1
-        uses: mxschmitt/action-tmate@7b6a61a73bbb9793cb80ad69b8dd8ac19261834c # v3.22
+        uses: mxschmitt/action-tmate@c0afd6f790e3a5564914980036ebf83216678101 # v3.23
         with:
           detached: true

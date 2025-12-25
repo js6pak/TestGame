@@ -69,6 +69,20 @@ internal class TestGame : AssetPostprocessor
         light.intensity = 0.5f;
 #endif
 
+        LightmapEditorSettings.maxAtlasWidth = LightmapEditorSettings.maxAtlasWidth = 32;
+#if UNITY_5_0_OR_NEWER
+        LightmapEditorSettings.bakeResolution = 1;
+        LightmapSettings.lightmapsMode = LightmapsMode.NonDirectional;
+#endif
+#if UNITY_2017_4_OR_NEWER
+        LightmapEditorSettings.lightmapper = LightmapEditorSettings.Lightmapper
+#if UNITY_2020_1_OR_NEWER
+            .ProgressiveCPU;
+#else
+            .Enlighten;
+#endif
+#endif
+
         var cube = GameObject.CreatePrimitive(PrimitiveType.Cube);
         cube.name = "Cube";
         cube.AddComponent<RotatingCubeBehaviour>();
